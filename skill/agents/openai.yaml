@@ -1,0 +1,7 @@
+interface:
+  display_name: "OSCE Item Development"
+  short_description: "Develop/revise OSCE stations with competency-task-scoring-SP/examiner alignment and observable anchors."
+  default_prompt: "Use $osce-item-development. Align competency → task → scoring → SP/examiner, then QA the station before artifact generation."
+
+policy:
+  allow_implicit_invocation: true
