@@ -4,6 +4,14 @@ description: >
   Develop, revise or audit an OSCE assessment station end to end, following the Taiwan Association of Medical Education (TAME) format and the 114 OSCE item-development guideline/checklist, and producing a directly printable .docx station file. Covers the pre-authoring clarification dialogue and blueprint gate, competency alignment, clinical scenario, candidate instructions, standardized-patient/family script, examiner guide, observable 0/1/2 scoring anchors, station-type specifics (history, physical examination, communication/education, explanation/management, technical) and station QA. Trigger for OSCE 出題／修題／審題, 「幫我出一題 OSCE」,「設計 OSCE 試題/教案」,「開發 OSCE 題目」,「我要做一個 OSCE [站型]站」,「出一題 [症狀/主題] 的 OSCE」, SP/family scripts, candidate/examiner guides, or OSCE scoring rubrics. Do not trigger for ordinary clinical case discussion, pure VR/dry-lab simulation curriculum, OSCE psychometrics or standard setting alone (use $osce-education), reliability/statistical analysis alone (use $clinical-statistics), or generic teaching documents unrelated to an OSCE station.
 ---
 
+<!--
+正本（CANONICAL SOURCE）：https://github.com/a017749-chen/OSCE-development  ->  skill/SKILL.md
+請一律在此正本修改，改完執行 repo 根目錄的 sync-skill.ps1 推送到下列部署位置：
+  1. C:\Users\User\.claude\skills\osce-item-development\   （實際生效）
+  2. C:\Users\User\YiChan-Context-Repo\.agents\skills\osce-item-development\   （skill 註冊表）
+切勿直接編輯上述兩處，否則會再次分歧。
+-->
+
 # OSCE Item Development — Canonical Workflow
 
 ## Core contract
@@ -170,13 +178,20 @@ OSCE is performance-based assessment. Align `competency → task → observable 
 - 給 SP 清楚的身份、情緒、痛苦程度、說話風格、界線
 - **明確標示 SP 可說／可做、不可說／不可做**
 - **每個 SP 面向評分項目都要有對應的 SP 回應或行為描述**，含詳細溝通範例
-- SP 主動發問**不超過 5 個**
-- 若 SP 被特定考生語句觸發，要明確標示觸發條件
+- SP 主動發問**不超過 5 個**（各站型一致）；其中**會觸及評分項目的至多 2 題**
+- **SP 不得主導對話**（病情解釋、醫病溝通與衛教站尤其致命）。SP 的提問是**測驗工具**，不是引導工具；推進會談的人必須是考生。三道防線：
+  1. **時機押後**：以「考生已完成主要說明」或「考生明顯停頓／已無話可說」為觸發，**不在開場或前段就發問**，先留空間讓考生主動發揮
+  2. **會送分的提問最多 2 題**：評分表有「說明手術風險」，SP 再問「開刀有什麼風險？」就是直接送分、讓該項失去鑑別力——這類提問要省著用
+  3. **評分保護**：若某提問觸及評分項目，**評分說明必須註明**「經 SP 提問後才說明者，最多給部份做到（1 分）」
+- **劇本對白例句表要嚴格控管**：第三欄叫「SP 的回應或提問」，很容易每一列都寫成提問。**SP 欄以「回應」為主，整表至多 2 列示範主動提問**——寫成列列發問，SP 訓練時會誤以為全程都要一直問，站次就變成 SP 主導
+- SP 提問應測「**回應品質**」而非「補內容」：問情緒、擔憂、價值偏好（如「我很怕痛」「我要顧小孩，沒辦法住院太久」），讓考生展現同理與共同決策
+- 若 SP 被特定考生語句觸發，要明確標示觸發條件（含**時機**：第幾分鐘後或何種情境才可發問）
 - **劇本對白例句必須是三欄表格**：
 
 | 病歷架構 | 醫師對 SP 說的話 | SP 的回應或提問 |
 |---------|--------------|---------|
 
+  - **第三欄「至多 2 列」可以是提問，其餘列一律只寫「回應」**。整表列列都是提問，等於在訓練 SP 主導會談
 - SP 劇本摘要同時放在**考官指引末尾**，供考官掌握情境
 
 ### 6. 草擬考生指引
@@ -234,11 +249,15 @@ OSCE is performance-based assessment. Align `competency → task → observable 
 - 評分重點：建立關係、議程設定、同理、訊息分塊、確認理解、回應情緒、結尾
 - **Teach-back 不可省略**，是高鑑別力項目
 - 不要讓禮貌性項目主導評分；溝通品質要支持臨床任務
+- **不可讓 SP 主導發問**：本站評的是考生能否**主動、有結構地衛教**，不是能否回答病人問題。SP 若一直問，考生只要被動接話就能拿分，評不出衛教規劃能力
+- SP 提問限縮在**情緒、擔憂、生活可行性**（「我怕會痛」「我要顧小孩沒空回診」），**不可替考生補上他沒說的衛教內容**
 
 ### 病情解釋／臨床處置站
 - 評分：對可能診斷的解釋、不確定性、下一步檢查、立即安全議題、治療選項、追蹤、病人擔憂
 - 考生有足夠資訊解釋與計畫，但任務不能變成朗讀結果
-- SP 提問測試：諮詢清晰度、同理、安全網、共同決策
+- SP 提問用來測**回應品質**（諮詢清晰度、同理、安全網、共同決策），**不是用來補內容**
+- **不可讓 SP 主導發問**：若 SP 一開場就問「要不要開刀？」「有什麼風險？」「可不可以先吃藥？」，等於把「說明治療建議／手術風險／保守治療限制」三個評分項目直接餵給考生，站次從「能否主動說明」變質為「能否被動應答」
+- SP 提問一律押在**考生說明告一段落後**；若提問觸及評分項目，評分說明須註明「經 SP 提問後才說明者，最多部份做到（1 分）」
 
 ### 技術／處置站
 - 區分：安全/身份/同意、準備、無菌或清潔技術、關鍵步驟、完成、併發症處置
@@ -408,8 +427,10 @@ $doc.Close(); $word.Quit()
 - 每個 SP 面向項目都有對應 SP 回應嗎？
 
 ### SP 層級
-- SP 主動提問 ≤ 5 個？
-- 觸發條件明確？
+- SP 主動提問 ≤ 5 個？**其中觸及評分項目的 ≤ 2 個？**
+- **劇本對白例句表：SP 欄提問的列數 ≤ 2？其餘列是否都只寫「回應」？**（最容易不小心寫成列列發問）
+- **提問時機是否押在考生主動說明之後？SP 有沒有變成主導者？**
+- 觸發條件明確？若提問觸及評分項目，評分說明是否已註明只能給部份做到？
 
 ### 考生指引層級
 - 提示卡 ≤ 3？檢查報告 ≤ 3 頁（純文字 ≤ 2 頁）？
