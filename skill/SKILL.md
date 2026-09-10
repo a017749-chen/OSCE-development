@@ -1,15 +1,14 @@
 ---
 name: osce-item-development
 description: >
-  Develop, revise or audit an OSCE assessment station end to end, following the Taiwan Association of Medical Education (TAME) format and the 114 OSCE item-development guideline/checklist, and producing a directly printable .docx station file. Covers the pre-authoring clarification dialogue and blueprint gate, competency alignment, clinical scenario, candidate instructions, standardized-patient/family script, examiner guide, observable 0/1/2 scoring anchors, station-type specifics (history, physical examination, communication/education, explanation/management, technical) and station QA. Trigger for OSCE 出題／修題／審題, 「幫我出一題 OSCE」,「設計 OSCE 試題/教案」,「開發 OSCE 題目」,「我要做一個 OSCE [站型]站」,「出一題 [症狀/主題] 的 OSCE」, SP/family scripts, candidate/examiner guides, or OSCE scoring rubrics. Do not trigger for ordinary clinical case discussion, pure VR/dry-lab simulation curriculum, OSCE psychometrics or standard setting alone (use $osce-education), reliability/statistical analysis alone (use $clinical-statistics), or generic teaching documents unrelated to an OSCE station.
+  Develop, revise or audit OSCE stations with competency-task-scoring alignment, standardized-patient scripts, observable 0/1/2 anchors and TAME-style Word output. Use for OSCE 出題、修題、審題, candidate/examiner guides and station rubrics. Exclude general clinical discussion, simulation curricula, and psychometrics or standard setting alone.
 ---
 
 <!--
-正本（CANONICAL SOURCE）：https://github.com/a017749-chen/OSCE-development  ->  skill/SKILL.md
-請一律在此正本修改，改完執行 repo 根目錄的 sync-skill.ps1 推送到下列部署位置：
-  1. C:\Users\User\.claude\skills\osce-item-development\   （實際生效）
-  2. C:\Users\User\YiChan-Context-Repo\.agents\skills\osce-item-development\   （skill 註冊表）
-切勿直接編輯上述兩處，否則會再次分歧。
+Canonical source: context://.agents/skills/osce-item-development/
+Edit this skill in the private YiChan-Context-Repo. OSCE-development/skill is a
+distribution snapshot, refreshed from Context Repo by sync-skill.ps1.
+Executable deployment tools belong in https://github.com/a017749-chen/OSCE-development.
 -->
 
 # OSCE Item Development — Canonical Workflow
@@ -45,7 +44,7 @@ OSCE is performance-based assessment. Align `competency → task → observable 
 
 - **預設先對話再產出**；唯有使用者明確表示「不用問、直接產」時才略過提問。
 - **已提供的參數不重複問**，只問缺漏或前後矛盾之處。
-- **無論如何都要出示「藍圖確認卡」**，未取得明確確認前**不得進入產出**。
+- 出示藍圖確認卡。使用者已給齊設定並要求產出，或明確授權「不用問、直接產」時，列出採用設定後繼續；其餘只確認會實質改變站次的缺漏或矛盾。
 
 ### 需釐清的參數
 
@@ -56,7 +55,7 @@ OSCE is performance-based assessment. Align `competency → task → observable 
 | **目標能力／領域** | 病人照護、溝通、臨床推理、專業素養、技術技能、安全 |
 | **核心任務** | 考生在 8 分鐘內要完成什麼 |
 | **目標診斷與重要鑑別** | 主診斷＋至少 2-3 個有意義的鑑別 |
-| **評分項目數（N）** | 要出幾項評分項目——**必須問，不要預設** |
+| **評分項目數（N）** | 要出幾項評分項目——優先使用已指定值；未指定且未授權採預設時才問 |
 | **場景** | 門診、急診、病房、手術室、處置室、衛教室 |
 | **必要人員** | SP、考官、護理師、家屬、假人/模型 |
 | **產出層級** | 討論用草稿、完整可印教案、或僅檢核表審閱 |
@@ -77,7 +76,7 @@ OSCE is performance-based assessment. Align `competency → task → observable 
 ### 評分項目數（N）怎麼問
 
 - 問法：「這一站要出**幾項**評分項目？（國考型建議 15 項；其他考型 10–15 項；也可依你的需求指定）」
-- 預設 15，但**一定要讓老師有機會改**，不得逕自套用。
+- 未指定 N 時建議 15；若使用者授權直接產出或採預設，於藍圖卡明列 N＝15 後繼續。
 - **滿分自動＝N × 2**（每項 0/1/2），不再固定 30 分。
 - 比例型規則隨 N 換算，並在確認卡標出實際數字：
   - ★高鑑別力 2–5 項；共通／通用項目 ≤1 項
@@ -110,17 +109,17 @@ OSCE is performance-based assessment. Align `competency → task → observable 
 （病史站 LQQOPERA ≤30%；身體檢查站 IAPP 順序；溝通／病情解釋站 Teach-back 不可省略）
 ```
 
-結尾固定問：「以上確認無誤請回『確認』，要改哪一項直接說。」**取得明確確認後才進入階段二。**
+若尚有影響站次方向的未定事項，請使用者確認；設定已完整或已有直接產出授權時，展示藍圖後進入階段二。
 
 ---
 
 ## 階段二：標準工作流程（草擬）
 
-> 進入本階段的前提：階段一的藍圖確認卡已取得使用者明確確認。
+> 依階段一採用已確認的設定，或使用者授權直接產出時所明列的設定。
 
 ### 0. 正式草擬前先讀格式範本
 
-正式產出前，先檢視 `G:\我的雲端硬碟\OSCE\OSCE教案開發教學\4.試題開發格式` 中對應站型的範本：
+正式產出前，透過 Context Repo 的 SYSTEM_REGISTRY.yaml 與本機覆寫解析 `cloud://OSCE/OSCE教案開發教學/4.試題開發格式`。部署工具產生的 `deployment.local.json` 會提供已解析的 template_dir；若雲端範本不存在，使用明確指定的 TemplateRoot，或 OSCE-development checkout 內的 templates/ 相容資產。先驗證對應檔案存在並記錄實際來源；部署到 agent 後不可假設相對於 skill 的 ../../templates 存在。
 
 - `1.試題參考格式-空白+例句(SP  病史詢問).docx`
 - `2.試題參考格式-空白+例句(SP  身體檢查).docx`
@@ -268,28 +267,20 @@ OSCE is performance-based assessment. Align `competency → task → observable 
 
 ## 階段三：輸出 Word 檔
 
-**輸出路徑**：`D:\OSCE教案開發教學\[科別]_[主題]_OSCE試題.docx`
+**輸出路徑**：使用者指定位置優先；否則解析 `cloud://OSCE/OSCE教案開發教學`。先在 `runtime://osce` 產出、驗證，再保存至已解析的雲端位置；同名文件存在時保留原檔，以明確修訂版命名。
 
 ### 工具（docx 產出）
 
 docx 全新產出以 **PowerShell + Microsoft Word COM** 為主（穩定、所見即所得）。
-備註：本機亦有 Node.js 與 Python（含 python-pptx）；若需「**編輯既有** .pptx／.docx」而不破壞圖片版面，可改用 python-pptx 等套件。**PowerPoint COM 在本機已損壞（Interface not registered，0x80040155），請勿使用**；且切勿用整份重產的腳本覆蓋使用者已手動編輯過的檔案。
+編輯 .docx 使用 Word COM 或 python-docx；python-pptx 僅處理 .pptx。先檢查當前機器可用工具，勿把另一台機器的 COM 故障視為全域限制。套件修改不保證版面不變；須逐頁渲染檢查，保留使用者手動修改的原檔。
 
 ### 中文編碼安全寫法
 
-```powershell
-# 第一段：用 UTF-8 with BOM 建立檔案（確保 PowerShell 正確讀取中文）
-[System.IO.File]::WriteAllText("D:\OSCE教案開發教學\_temp.ps1", $part1, [System.Text.Encoding]::UTF8)
+PowerShell 5.1 腳本使用 UTF-8 with BOM；後續追加使用 UTF-8 without BOM。
+暫存腳本使用 runtime://osce 下的唯一檔名；只清理本次建立的檔案。
 
-# 後續追加：用 UTF-8 without BOM（避免中間出現 BOM 破壞檔案）
-$encNoBOM = New-Object System.Text.UTF8Encoding($false)
-[System.IO.File]::AppendAllText("D:\OSCE教案開發教學\_temp.ps1", $part2, $encNoBOM)
-
-& powershell -ExecutionPolicy Bypass -File "D:\OSCE教案開發教學\_temp.ps1" 2>&1
-Remove-Item "D:\OSCE教案開發教學\_temp.ps1" -Force
-```
-
-若 Word 未關閉導致儲存失敗：`Get-Process WINWORD | Stop-Process -Force`
+Word 儲存失敗時，保留本次文件與錯誤資訊供重試，不得列舉並強制結束所有 WINWORD。
+只操作本次建立且由本次流程持有的 document/application COM 物件。
 
 ### 特殊字元（**踩過的坑**）
 
@@ -403,10 +394,19 @@ function TC { param($tbl) $tbl.Rows.Alignment = 1 }  # 表格置中（必加）
 ### 儲存
 
 ```powershell
-$doc.SaveAs2($outputPath, 16)
-$doc.Close(); $word.Quit()
+# $doc/$word 必須是本次建立的物件，outputPath 必須是新的修訂檔名。
+try {
+    if (Test-Path -LiteralPath $outputPath) { throw "輸出已存在，請使用新的修訂檔名。" }
+    $doc.SaveAs2($outputPath, 16)
+} catch {
+    # 保留本次文件供人工另存或重試；不關閉其他 Word 文件。
+    throw
+}
+$doc.Close()
+# 僅當本次 application 已無其他文件時結束。
+if ($word.Documents.Count -eq 0) { $word.Quit() }
+[System.Runtime.InteropServices.Marshal]::ReleaseComObject($doc) | Out-Null
 [System.Runtime.InteropServices.Marshal]::ReleaseComObject($word) | Out-Null
-[System.GC]::Collect()
 ```
 
 ---
@@ -414,7 +414,7 @@ $doc.Close(); $word.Quit()
 ## 品質檢核閘（產出前自問）
 
 ### 站次層級
-- **是否已出示藍圖確認卡並取得使用者明確確認？**（未確認不得產出）
+- **是否已記錄藍圖及使用者設定／直接產出授權？** 有實質矛盾時先處理。
 - 任務在 8 分鐘內可完成嗎？
 - 站次符合學員程度與目標能力嗎？
 - 站型乾淨、未混合不相容類型嗎？

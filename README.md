@@ -12,7 +12,7 @@
 
 | 目錄 | 內容 |
 |------|------|
-| `skill/` | **正式版 skill**（`SKILL.md` ＋ `references/`）——本 repo 是這份 skill 的唯一來源 |
+| `skill/` | Context Repo 正式 skill 的發行快照；請在 Context Repo 修改後同步 |
 | `templates/` | 台灣醫學教育學會官方試題參考格式（四種 SP 站型＋操作技能站） |
 | `teaching/` | 出題教師講習簡報、可直接複製的出題 Prompt 講義 |
 | `stations/` | 已完成的教案範例（16 份，涵蓋五種站型） |
@@ -21,13 +21,13 @@
 
 ## skill 怎麼用
 
-把 `skill/SKILL.md` 放進 AI 助理的 skills 目錄（例如 Claude Code 的 `~/.claude/skills/osce-item-development/`），然後直接說：
+先依下方「跨機部署」安裝完整 skill 目錄（含 references 與本機資產指標），然後直接說：
 
 ```
 幫我出一題 OSCE
 ```
 
-skill 會**先跟你進行三輪確認對話**（站次定位 → 評量設計 → 執行細節），出示「藍圖確認卡」取得你確認後，才開始產出教案，最後輸出可列印的 .docx。
+skill 會整理站次定位、評量設計、執行細節並展示藍圖。已給齊設定並要求產出、或已授權直接產出時繼續；僅詢問會實質改變結果的缺漏。
 
 `teaching/OSCE出題Prompt_出題教師專用.docx` 是給出題老師的填空式 prompt，把 `--` 換成自己的內容即可。
 
@@ -72,6 +72,42 @@ skill 會**先跟你進行三輪確認對話**（站次定位 → 評量設計 �
 ## 產出環境備註
 
 - .docx 產出使用 **PowerShell + Microsoft Word COM**
-- 編輯既有 .pptx／.docx 用 **python-pptx**（不破壞圖片版面）
-- **PowerPoint COM 在開發機已損壞**（`Interface not registered`，0x80040155），請勿使用
+- 編輯 .docx 使用 Word COM 或 python-docx；python-pptx 用於 .pptx。修改後另做逐頁版面檢查。
+- COM 可用性需在當前機器檢查。只管理本次建立的文件，不強制結束其他 Word 工作階段。
+
+## 跨機部署
+
+唯一規則來源為私人 YiChan-Context-Repo 的
+`.agents/skills/osce-item-development/`；本 repo 管理部署程式。
+既有 templates/stations/teaching 檔案保留作相容與歷史用途，本次不遷移。
+新教案成果依 registry 保存到 cloud://OSCE/OSCE教案開發教學。
+
+需要 Python 3.10+；YAML registry 另需 `pip install -r requirements.txt`。
+Context Repo 位置可使用 -ContextRoot 或 YICHAN_CONTEXT_ROOT；
+未指定時偵測使用者 Documents/ 或使用者根目錄下的 YiChan-Context-Repo。
+兩處皆存在時須明確指定。雲端與 runtime 根目錄取自該 repo 的
+SYSTEM_REGISTRY.yaml 與 SYSTEM_REGISTRY.local.yaml。
+
+```powershell
+# 預設唯讀，列出 Claude 與 Codex 各自的變更及衝突
+.\sync-skill.ps1 -ContextRoot '<本機 Context Repo>'
+# 實際部署
+.\sync-skill.ps1 -ContextRoot '<本機 Context Repo>' -Apply
+# 更新本 repo 的發行快照（明確指定目標）
+.\sync-skill.ps1 -ContextRoot '<本機 Context Repo>' -Target '.\skill' -Apply
+```
+
+範本依序使用 -TemplateRoot、registry 解析的雲端範本、repo templates/。
+缺少四種站型範本時停止。部署會產生 deployment.local.json，讓已安裝的 skill
+找到實際 template_dir、output_dir、runtime_dir。
+本機指標、同步基準 .sync-state.json 與 .sync-backups/ 不進 Git。
+
+任何目標有未管理差異或上次部署後的自行修改時，整批預檢失敗且不寫入。
+首次接管既有不同內容時，先將差異整合回 Context Repo，保存舊版本，
+再讓目標與 canonical 內容一致後建立基準。工具沒有強制覆蓋選項。
+正常來源更新會先備份被替換檔案、複製後驗證 SHA-256；多餘檔案保留並列出。
+若執行中失敗，已完成的個別檔案可能已更新；保留備份且錯誤退出，修正後重跑。
+
+驗證：`python -B -m unittest discover -s tests`。
+這些測試驗證部署行為，不代表既有教案通過臨床審題或逐頁視覺 QA。
 - Windows PowerShell 5.1 **不支援 `` `u3000 `` 這類 Unicode 逸出**，特殊字元（□ ■ ℃ μ ’ …）須直接輸入真字元

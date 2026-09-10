@@ -11,9 +11,9 @@ If teacher/framework alignment is unverified, label it pending. AI walkthrough a
 ## Local full-station defaults
 - Five sections in order: 一、告示牌; 二、考生指引; 三、評分表; 四、考官指引; 五、SP 指引（劇本）.
 - Usual local time: 8 minutes, unless specified otherwise.
-- Sign: 2x1 table, station number 36 pt bold centered; concise age/sex/presentation 24 pt bold centered, normally <=30 Chinese characters.
+- Sign: follow the maintained SKILL.md font specification (48/36 pt); obsolete 36/24 pt examples are historical only.
 - Candidate: brief role/setting; three red bullet tasks for this format; explicit exclusions/time; 3x2 relevant-report table when applicable. Reveal neither diagnostic answer nor scoring key.
-- Scoring: header plus 15 items in a 16x5 table: item, 0 not done, 1 partial, 2 complete, notes; total 30. Include candidate ID, station type, difficulty rating, five-level global rating and examiner signature.
+- Scoring: header plus N items in an (N+1)x5 table; total N*2. N follows the blueprint and SKILL.md. Include candidate ID, station type, difficulty rating, five-level global rating and examiner signature.
 - Mark 2–5 intended higher-discrimination items; this is design intent, not empirical item-discrimination evidence. At most one generic item, most items on the main construct; no more than three sub-behaviors per item. All anchors are mutually distinguishable and observable.
 - Examiner: five purpose/standardization prompts; setting, case, equipment, expected reasoning/actions, all item-specific anchors and SP summary.
 - SP: preparation/rehearsal, setting/posture/affect, personnel/props, timing, volunteer-vs-prompt boundaries, narrative and dialogue table (history component | candidate question | SP response).

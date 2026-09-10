@@ -29,3 +29,8 @@ eval_results/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+deployment.local.json
+.sync-state.json
+.sync-backups/
+__pycache__/
