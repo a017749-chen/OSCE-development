@@ -1,0 +1,31 @@
+# 大型簡報／PDF（原始素材請留在雲端硬碟，勿入 repo）
+*.pdf
+osce教案*.pptx
+補充資料.pptx
+
+# Word／Office 暫存與鎖定檔
+~$*
+*.tmp
+*.wbk
+*.asd
+
+# 建置與測試過程檔
+_*.ps1
+_*.py
+_*.txt
+_pptx_build/
+node_modules/
+eval_results/
+*_備份_*.docx
+*_備份_*.pptx
+*_舊*版_*.docx
+
+# 含個資／機構敏感資料，一律不入庫
+*審題委員意見回饋*
+*基隆長庚*
+*回饋.pdf
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
