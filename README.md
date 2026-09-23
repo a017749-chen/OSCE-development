@@ -50,6 +50,13 @@
 
 把範本中的 `--` 換成自己的臨床情境即可直接送出。
 
+### 方式 C：免費版 ChatGPT / 網頁大模型用戶（無 Agent 環境專用）
+
+若您手邊沒有 coding agent 或進階終端工具，僅使用一般的**免費版 ChatGPT（3.5 / 4o-mini / 4o 均可）、Claude 或 Gemini 網頁介面**：
+1. 打開本 repo 根目錄的 [`SKILL_GPT.md`](SKILL_GPT.md)（或 [`teaching/SKILL_GPT.md`](teaching/SKILL_GPT.md)）。
+2. **複製全部內容**，貼入網頁版 ChatGPT 的第一條對話（或填入 Custom GPT 的 Instructions 欄位）。
+3. ChatGPT 會立即載入所有 TAME 規範、職類分流、敘事醫學向度規準與防呆紅線，並自動啟動 **Grill Me 訪談對話**，引導您完成背景設定並產出試題！
+
 ---
 
 ## 核心規格與評分模式摘要
