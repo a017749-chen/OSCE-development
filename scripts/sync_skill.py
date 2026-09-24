@@ -15,6 +15,13 @@ import shutil
 import sys
 import uuid
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 STATE = ".sync-state.json"
 LOCAL = "deployment.local.json"
 SKILL = ".agents/skills/osce-item-development"

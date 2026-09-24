@@ -18,6 +18,13 @@ import copy
 import sys
 from pathlib import Path
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 import docx
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
@@ -165,12 +172,29 @@ def check_station(s: dict, rules: dict):
     mode = s.get("rubric", "checklist")
     if mode == "checklist":
         c = rules["checklist"]
-        n = len(s["checklist"])
-        stars = sum(1 for i in s["checklist"] if i.get("star"))
+        n = len(s.get("checklist", []))
+        stars = sum(1 for i in s.get("checklist", []) if i.get("star"))
         if not c["items_min"] <= n <= c["items_max"]:
             problems.append(f"評分項目 {n} 項，範圍 {c['items_min']}–{c['items_max']}")
         if not c["high_discrimination_min"] <= stars <= c["high_discrimination_max"]:
             problems.append(f"★ {stars} 項，範圍 {c['high_discrimination_min']}–{c['high_discrimination_max']}")
+    elif mode == "narrative":
+        if "narrative" not in s or not isinstance(s["narrative"], dict):
+            problems.append("缺少 narrative 敘事評量區塊")
+        else:
+            nar_conf = rules["narrative"]
+            for dim in nar_conf["scored_dimensions"]:
+                dname = dim["name"]
+                if dname not in s["narrative"]:
+                    problems.append(f"敘事評量缺少向度：{dname}")
+                else:
+                    anchors = s["narrative"][dname]
+                    missing_levels = [lvl for lvl in ("4", "3", "2", "1")
+                                      if lvl not in anchors and int(lvl) not in anchors]
+                    if missing_levels:
+                        problems.append(f"向度「{dname}」缺少等級錨點：{missing_levels}")
+    else:
+        problems.append(f"未知的評量模式：{mode}，必須為 checklist 或 narrative")
     questions = sum(1 for row in s["sp"]["dialogue"] if row.get("question"))
     if questions > rules["sp"]["dialogue_question_rows_max"]:
         problems.append(f"對白表提問列 {questions} 列，上限 {rules['sp']['dialogue_question_rows_max']}")
@@ -252,7 +276,7 @@ def build(station: dict, rules: dict, template_dir: Path):
         rows = [["敘事評量向度"] + levels]
         for dim in nar["scored_dimensions"]:
             anchors = station["narrative"][dim["name"]]
-            rows.append([dim["name"]] + [anchors[level] for level in ("4", "3", "2", "1")])
+            rows.append([dim["name"]] + [str(anchors.get(level) if anchors.get(level) is not None else anchors.get(int(level), "")) for level in ("4", "3", "2", "1")])
         w.table(rows, nar["columns_cm"])
         w.table([["關鍵互動觀察紀錄（Critical Incidents）", "質性反思與教學回饋建議（Reflective Feedback）"],
                  ["", ""]], [8.5, 8.5])

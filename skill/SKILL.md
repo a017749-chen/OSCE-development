@@ -215,7 +215,7 @@ Word 產檔 `references/docx-word-com.md`；手冊版在地規格 `references/ha
 
 工具在 OSCE-development repo 的 `scripts/`；repo 位置是 `deployment.local.json` 裡 `canonical` 的上一層。
 
-1. **把教案內容寫成 YAML**，格式照 repo 的 `examples/example_station.yaml`（只放內容；字級、欄寬、固定文字都由 `rules.yaml` 決定）。
+1. **把教案內容寫成 YAML**，格式照 repo 的 `examples/example_station.yaml`（條列式評分）或 `examples/example_narrative_station.yaml`（敘事醫學評分；只放內容，字級、欄寬、固定文字都由 `rules.yaml` 決定）。
 2. **產檔**：`python scripts/build_station.py <教案.yaml> -o <runtime_dir>/<檔名>.docx`
    —— 依站型取官方範本的版面與樣式，任何電腦都能跑，不需要 Word。違反硬規格（字數、● 數、★ 數、SP 提問列、Teach-back、鑑別數）會直接拒絕並列出原因。
 3. **檢核**：`python scripts/validate_station.py <檔案>.docx` —— 必須零 FAIL；WARN 要逐一說明理由。

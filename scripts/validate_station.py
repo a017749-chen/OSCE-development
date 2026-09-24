@@ -23,6 +23,13 @@ import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 import docx
 from docx.oxml.ns import qn
 
@@ -198,11 +205,12 @@ def validate(path: Path, rules: dict) -> Report:
     else:
         report.add(SKIP, "考生指引", "找不到考生指引或評分表標題")
 
-    # Checklist
+    # Checklist or Narrative Rubric
     checklist = next((t for t in tables if t.rows[0].cells[0].text.strip().startswith("評分項目")), None)
-    if checklist is None:
-        report.add(SKIP, "條列式評分表", "沒有「評分項目」表（可能是敘事醫學評分）")
-    else:
+    narrative_table = next((t for t in tables if t.rows[0].cells[0].text.strip().startswith("敘事評量向度")), None)
+    if checklist is None and narrative_table is None:
+        report.add(FAIL, "評分表", "沒有評分表（條列式「評分項目」或「敘事評量向度」皆無）")
+    elif checklist is not None:
         items = [r for r in checklist.rows[1:] if r.cells[0].text.strip()]
         n = len(items)
         stars = sum(1 for r in items if "★" in r.cells[0].text)
@@ -220,6 +228,29 @@ def validate(path: Path, rules: dict) -> Report:
         report.add(PASS if c["high_discrimination_min"] <= stars <= c["high_discrimination_max"] else WARN,
                    f"★ {c['high_discrimination_min']}–{c['high_discrimination_max']} 項",
                    f"{stars} 項" + ("（未標★）" if stars == 0 else ""))
+    else:
+        # Narrative medicine rubric
+        report.add(SKIP, "條列式評分表", "採用敘事醫學評量規準")
+        nar = rules["narrative"]
+        expected_dims = [dim["name"] for dim in nar["scored_dimensions"]]
+        table_dims = [r.cells[0].text.strip() for r in narrative_table.rows[1:] if r.cells[0].text.strip()]
+        missing_dims = [d for d in expected_dims if d not in table_dims]
+        report.add(FAIL if missing_dims else PASS, "敘事評量向度完整",
+                   f"缺：{'、'.join(missing_dims)}" if missing_dims else f"{len(table_dims)} 個向度")
+
+        expected_total = osce_rules.narrative_total(rules)
+        stated = None
+        for p in paragraphs:
+            m = re.search(r"滿分[：:\s]*(\d+)\s*分", p.text)
+            if m:
+                stated = int(m.group(1))
+                break
+        report.add(PASS if stated == expected_total else FAIL, f"敘事評量滿分 {expected_total} 分",
+                   f"寫 {stated} 分，應為 {expected_total} 分" if stated != expected_total else f"{stated} 分")
+
+        feedback_table = next((t for t in tables if any("關鍵互動觀察紀錄" in c.text for r in t.rows for c in r.cells)), None)
+        report.add(PASS if feedback_table else FAIL, "質性反思與教學回饋表",
+                   "" if feedback_table else "缺少關鍵互動觀察與反思回饋表")
 
     # Dialogue table
     # Found by its SP columns, not its first header: older stations renamed that column.

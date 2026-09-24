@@ -131,7 +131,12 @@
 ## 產檔與檢核（不需要 Word）
 
 ```bash
+# 條列式評分（醫學系）
 python scripts/build_station.py examples/example_station.yaml -o out/範例.docx
+# 敘事醫學評分（非醫學職類）
+python scripts/build_station.py examples/example_narrative_station.yaml -o out/範例_敘事.docx
+
+# 檢核
 python scripts/validate_station.py out/範例.docx
 python scripts/validate_station.py --report stations/STATUS.md stations/*.docx
 ```

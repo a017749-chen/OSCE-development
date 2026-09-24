@@ -17,6 +17,7 @@ import validate_station  # noqa: E402
 
 RULES = osce_rules.load()
 EXAMPLE = build_station.load_station(REPO / "examples" / "example_station.yaml")
+EXAMPLE_NARRATIVE = build_station.load_station(REPO / "examples" / "example_narrative_station.yaml")
 
 
 class StationToolTests(unittest.TestCase):
@@ -103,14 +104,63 @@ class StationToolTests(unittest.TestCase):
         header = document.tables[-2].rows[0].cells[2].text
         self.assertEqual(header, RULES["station_types"]["history"]["dialogue_third_column"])
 
-    def test_narrative_rubric_builds(self):
-        station = copy.deepcopy(EXAMPLE)
-        station["rubric"] = "narrative"
-        station["narrative"] = {d["name"]: {"4": "優", "3": "熟", "2": "展", "1": "未"}
-                                for d in RULES["narrative"]["scored_dimensions"]}
-        results, _ = self.results(self.build(station))
+    def test_the_narrative_example_builds_and_passes_every_check(self):
+        results, report = self.results(self.build(EXAMPLE_NARRATIVE, name="narrative.docx"))
+        failed = {k: v for k, v in results.items() if v[0] in ("FAIL", "WARN")}
+        self.assertEqual(failed, {})
+        self.assertEqual(report.station_type, "communication")
         self.assertEqual(results["條列式評分表"][0], "SKIP")
+        self.assertEqual(results["敘事評量向度完整"][0], "PASS")
+        self.assertEqual(results["敘事評量滿分 12 分"][0], "PASS")
+        self.assertEqual(results["質性反思與教學回饋表"][0], "PASS")
         self.assertEqual(results["表格有框線"][0], "PASS")
+
+    def test_the_builder_refuses_invalid_narrative_station(self):
+        cases = {
+            "missing_narrative_block": lambda s: s.pop("narrative", None),
+            "missing_dimension": lambda s: s["narrative"].pop("全心傾聽與病患故事探索", None),
+            "missing_anchor_level": lambda s: s["narrative"]["同理共鳴與處境再現"].pop(4, None) or s["narrative"]["同理共鳴與處境再現"].pop("4", None),
+            "unknown_rubric_mode": lambda s: s.update(rubric="invalid_mode"),
+        }
+        for name, spoil in cases.items():
+            station = copy.deepcopy(EXAMPLE_NARRATIVE)
+            spoil(station)
+            with self.subTest(name), self.assertRaises(build_station.StationError):
+                build_station.build(station, RULES, REPO / "templates")
+
+    def test_narrative_builder_accepts_integer_and_string_keys(self):
+        station = copy.deepcopy(EXAMPLE_NARRATIVE)
+        for dim in RULES["narrative"]["scored_dimensions"]:
+            station["narrative"][dim["name"]] = {
+                int(k): v for k, v in station["narrative"][dim["name"]].items()
+            }
+        results, report = self.results(self.build(station, name="narrative_int_keys.docx"))
+        self.assertFalse(report.failed)
+        self.assertEqual(results["敘事評量向度完整"][0], "PASS")
+
+    def test_the_validator_catches_narrative_flaws(self):
+        import docx
+        path = self.build(EXAMPLE_NARRATIVE, name="narrative_to_break.docx")
+
+        # Flaw 1: stated total score is 16 instead of 12
+        document = docx.Document(str(path))
+        for p in document.paragraphs:
+            if "滿分" in p.text:
+                p.text = p.text.replace("12", "16")
+        broken_score = Path(self.tmp.name) / "broken_score.docx"
+        document.save(str(broken_score))
+        results, _ = self.results(broken_score)
+        self.assertEqual(results["敘事評量滿分 12 分"][0], "FAIL")
+
+        # Flaw 2: missing qualitative feedback table
+        document = docx.Document(str(path))
+        for t in list(document.tables):
+            if any("關鍵互動觀察紀錄" in c.text for r in t.rows for c in r.cells):
+                t._tbl.getparent().remove(t._tbl)
+        broken_feedback = Path(self.tmp.name) / "broken_feedback.docx"
+        document.save(str(broken_feedback))
+        results, _ = self.results(broken_feedback)
+        self.assertEqual(results["質性反思與教學回饋表"][0], "FAIL")
 
 
 if __name__ == "__main__":
