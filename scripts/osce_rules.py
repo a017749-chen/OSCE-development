@@ -73,7 +73,9 @@ def sp_rules(rules: dict) -> str:
     return "\n".join([
         f"- SP 主動提問 **≤{s['questions_max']} 題**，其中會觸及評分項目的 **≤{s['scoring_questions_max']} 題**。",
         "- 提問押在**考生完成主要說明之後**（或明顯停頓時），SP 不得主導會談。",
-        f"- 劇本對白例句表（三欄：`{' | '.join(s['dialogue_columns'])}`，"
+        f"- 劇本對白例句表（三欄：`{' | '.join(s['dialogue_columns'][:2])} | 第三欄`，第三欄依官方範本："
+        + "；".join(f"{v['name']}「{v['dialogue_third_column']}」" for v in rules["station_types"].values())
+        + "，"
         f"欄寬 {' / '.join(str(w) for w in s['dialogue_columns_cm'])} cm）"
         f"至多 **{s['dialogue_question_rows_max']} 列**寫成提問，其餘列只寫「回應」。",
         f"- 提問若觸及評分項目，評分說明須註明「經 SP 提問後才說明者，最多給 {s['prompted_item_score_cap']} 分（部份做到）」。",

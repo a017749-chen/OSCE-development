@@ -12,6 +12,14 @@
 station:
   minutes: 8
   sections: [告示牌, 考生指引, 評分表, 考官指引, SP 指引]
+  # 官方範本「考官任務提示」固定五條
+  examiner_prompts:
+    - 本考試目的在於為醫學系畢業生臨床能力之最低標準把關。
+    - 評分心態是評分公平性之關鍵，評分時請保持專注。
+    - 請檢視考生指引、SP指引與評分表之測驗目標一致性，以掌握本題。
+    - 請詳讀評分項目、評分說明。
+    - 考前評分共識時段，請依據考題及共識參考影片，進行評分之熱身。
+  difficulty: [極難, 難, 中, 易]
 
 # 字級是 TAME 格式的一部分，不可自行縮小。
 fonts_pt:
@@ -57,6 +65,7 @@ sp:
   scoring_questions_max: 2     # 會觸及評分項目的提問
   dialogue_question_rows_max: 2
   prompted_item_score_cap: 1   # 經 SP 提問後才說明者，最多部份做到
+  # 第三欄標題依官方範本：病史、身體檢查寫「SP的回應」；溝通衛教、病情解釋寫「SP的回應或提問」。
   dialogue_columns: ["病歷架構", "醫師對 SP 說的話", "SP 的回應或提問"]
   dialogue_columns_cm: [3.5, 6.5, 5.5]
 
@@ -64,18 +73,22 @@ station_types:
   history:
     name: 病史詢問
     template: "1.試題參考格式-空白+例句(SP  病史詢問).docx"
+    dialogue_third_column: "SP 的回應"
     lqqopera_max_fraction: 0.3
   physical:
     name: 身體檢查
     template: "2.試題參考格式-空白+例句(SP  身體檢查).docx"
+    dialogue_third_column: "SP 的回應"
     abdomen_order: [視診, 聽診, 叩診, 觸診]   # 聽診在叩、觸之前
   communication:
     name: 醫病溝通與衛教
     template: "3.試題參考格式-空白+例句(SP  醫病溝通與衛教).docx"
+    dialogue_third_column: "SP 的回應或提問"
     teach_back_required: true
   explanation:
     name: 病情解釋及臨床處置
     template: "4.試題參考格式-空白+例句(SP  病情解釋及臨床處置).docx"
+    dialogue_third_column: "SP 的回應或提問"
     teach_back_required: true
 
 # 非醫學職類可選。第四向度是考官質性回饋，不計分。
