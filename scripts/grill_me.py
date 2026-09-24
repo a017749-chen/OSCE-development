@@ -13,23 +13,15 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 from typing import Any, Dict
 
 
-PROFESSIONS = [
-    "醫學系／醫師",
-    "護理學系／護理師",
-    "藥學系／藥師",
-    "物理治療學系／物理治療師",
-    "職能治療學系／職能治療師",
-    "呼吸治療學系／呼吸治療師",
-    "營養學系／營養師",
-    "醫事檢驗學系／醫檢師",
-    "醫事放射學系／放射師",
-    "臨床心理學系／心理師",
-    "醫務社會工作／社工師",
-    "其他醫事職類",
-]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import osce_rules  # noqa: E402  - rules.yaml is the single source of every number
+
+RULES = osce_rules.load()
+PROFESSIONS = RULES["professions"]
 
 STATION_TYPES = [
     "病史詢問站",
@@ -111,46 +103,34 @@ def build_osce_prompt(config: Dict[str, Any]) -> str:
     lines.append("【四、執行人員與 SP 設定】")
     lines.append(f"- 必要人員與道具：{personnel}")
     lines.append(f"- SP 人設、情緒與起始姿態：{sp_profile}")
-    lines.append("- SP 提問限制：主動發問 ≤ 5 題（其中觸及評分項目者至多 2 題）；提問必須押在考生說明告一段落後；不可讓 SP 主導會談。劇本對白例句表（三欄表格）中主動提問列至多 2 列，其餘一律只寫回應。")
+    lines.append("- SP 提問限制：")
+    lines.extend(osce_rules.sp_rules(RULES).splitlines())
     lines.append("")
     
     if rubric_type == "narrative":
-        lines.append("【五、評分架構要求：敘事醫學方式評分（全人照護四大向度質性規準）】")
-        lines.append("本站採用非醫學職類／全人照護專用之「敘事醫學方式評分」，不產出破碎扣分式的 0/1/2 條列打勾，改採 Rita Charon 敘事醫學四大核心向度質性評量規準（Holistic Rubric）：")
-        lines.append("1. 向度一：全心傾聽與病患故事探索（Attention: Eliciting Illness Narrative）")
-        lines.append("   - 評核學員能否辨識病人隱含情緒暗號（Cues）、探詢疾病對日常生活與家庭之衝擊，營造安全包容之傾聽氛圍。")
-        lines.append("   - 包含四級錨點：優異 (4分)、熟練 (3分)、發展中 (2分)、未達標準 (1分)。")
-        lines.append("2. 向度二：同理共鳴與處境再現（Representation: Empathic Resonance & Reflection）")
-        lines.append("   - 評核學員能否運用反思性同理精準回饋病人的焦慮與脆弱，讓病人感受到自己的痛苦被全然看見與理解。")
-        lines.append("   - 包含四級錨點：優異 (4分)、熟練 (3分)、發展中 (2分)、未達標準 (1分)。")
-        lines.append("3. 向度三：關係締結與共同照護同盟（Affiliation: Relational Alliance & Shared Care）")
-        lines.append("   - 評核學員能否展現平權互動、尊重病患價值觀，將專業建議融於病患生活脈絡，締結可行的照護同盟。")
-        lines.append("   - 包含四級錨點：優異 (4分)、熟練 (3分)、發展中 (2分)、未達標準 (1分)。")
-        lines.append("4. 向度四：考官質性敘事觀察與反思回饋表（Narrative Observation & Qualitative Feedback）")
-        lines.append("   - 考官專用欄位，記錄考生在溝通中的「關鍵互動片段（Critical Incidents）」與「質性反思學習建議」。")
-        lines.append("5. 整體表現評等（Global Rating）：5 等第（優秀5分／良好4分／普通3分／待加強2分／差1分）。")
+        lines.append("【五、評分架構要求：敘事醫學方式評分（全人照護質性規準）】")
+        lines.append("不產出破碎扣分式的 0/1/2 條列打勾，改採 Rita Charon 敘事醫學質性評量規準：")
+        lines.extend(osce_rules.narrative_rules(RULES).replace(
+            "規準全文見 `references/narrative-rubric.md`。", "每向度需寫出四級錨點描述。").splitlines())
     else:
         lines.append("【五、評分架構要求：TAME 官方條列式評分】")
-        lines.append(f"- 評分項目數：共 {item_count} 項，每項 0 沒有做到／1 部分做到／2 完全做到，滿分 {item_count*2} 分。")
-        lines.append("- 高鑑別力項目（★）：2–5 項；共通／通用項目 ≤ 1 項；主要評分範圍佔 ≥ 50%（至少 ⌈N/2⌉ 項）。")
-        lines.append("- 錨點清晰具體，為可觀察之行為指標，避免「適當地」等主觀形容詞。")
-        lines.append("- 子項目 ≤ 3 個；不重複給分；不需隱性推論。")
-        lines.append("- 整體表現評等（Global Rating）：5 等第（優秀5分／良好4分／普通3分／待加強2分／差1分）。")
-        
+        lines.append(f"- 本站評分項目數：共 {item_count} 項，滿分 {item_count * 2} 分。")
+        lines.extend(osce_rules.checklist_rules(RULES).splitlines())
+        lines.append("- 錨點清晰具體，為可觀察之行為指標，避免「適當地」等主觀形容詞；不重複給分；不需隱性推論。")
+
     lines.append("")
-    lines.append("【六、教案輸出規範（嚴格遵守 TAME 格式五大部分）】")
-    lines.append("請完整輸出繁體中文之教案五大部分：")
-    lines.append("1. 告示牌：站次號（48pt粗體）＋病患資訊（36pt粗體，≤30字）。")
-    lines.append("2. 考生指引（本體26pt）：背景資料（≤30字）＋測驗主題（≤3個紅色●）＋測驗時間＋相關檢查報告表格（診間文件14pt）。")
-    lines.append("3. 評分表：依上述評分架構要求完整輸出表格。")
-    lines.append("4. 考官指引：考官任務提示＋場景與SP起始姿態＋病情摘要＋鑑別診斷/照護焦點＋評分錨點說明＋SP劇本摘要。")
-    lines.append("5. SP 指引：演出說明＋回應原則＋劇情摘要＋劇本對白例句（三欄表格：病歷架構／考生對SP說的話／SP的回應或提問）＋診間配置示意圖。")
+    lines.append("【六、教案輸出規範（TAME 格式五大部分）】")
+    lines.append("請完整輸出繁體中文之教案五大部分：" + "／".join(RULES["station"]["sections"]) + "。")
+    lines.append("考生指引需含相關檢查報告表格；考官指引需含每項評分錨點說明與 SP 劇本摘要；SP 指引需含三欄對白表與診間配置示意圖。")
+    lines.append("")
+    lines.append("【七、硬規格與站型紅線】")
+    lines.extend(osce_rules.prompt_tail(RULES).splitlines())
     lines.append("```")
     lines.append("")
     return "\n".join(lines)
 
 
-def run_interactive_grill_me() -> None:
+def run_interactive_grill_me(output_filename: str = "OSCE_Authoring_Prompt.md") -> None:
     """執行命令列互動式 Grill Me 訪談"""
     print("=" * 70)
     print("  OSCE 教案開發 · Grill Me 訪談與出題專用 Prompt 生成器")
@@ -180,8 +160,9 @@ def run_interactive_grill_me() -> None:
     if is_medical_profession(profession):
         print("醫學系／醫師職類：自動設定為「TAME 官方條列式評分（0/1/2 錨點，滿分 N×2）」")
         config["rubric_type"] = "checklist"
-        item_cnt = input("請設定評分項目數 N (國考型建議 15 項，直接按 Enter 預設 15): ").strip()
-        config["item_count"] = int(item_cnt) if item_cnt.isdigit() else 15
+        default_n = RULES["checklist"]["items_default"]
+        item_cnt = input(f"請設定評分項目數 N (國考型建議 {default_n} 項，直接按 Enter 預設 {default_n}): ").strip()
+        config["item_count"] = int(item_cnt) if item_cnt.isdigit() else default_n
     else:
         print("非醫學職類：可依教案屬性選擇評分方式：")
         print("  [1] 敘事醫學方式評分（推薦：全人照護四大向度質性規準＋考官質性觀察回饋）")
@@ -193,8 +174,8 @@ def run_interactive_grill_me() -> None:
             config["item_count"] = int(item_cnt) if item_cnt.isdigit() else 12
         else:
             config["rubric_type"] = "narrative"
-            config["item_count"] = 4
-            print("-> 已設定為：敘事醫學方式評分（全人照護四大向度規準）")
+            config["item_count"] = len(RULES["narrative"]["scored_dimensions"])
+            print("-> 已設定為：敘事醫學方式評分（三個計分向度＋考官質性回饋）")
     print()
 
     # 步驟 1：站次定位
@@ -278,7 +259,6 @@ def run_interactive_grill_me() -> None:
     print("=" * 70)
     output_prompt = build_osce_prompt(config)
 
-    output_filename = "OSCE_Authoring_Prompt.md"
     try:
         with open(output_filename, "w", encoding="utf-8") as f:
             f.write(output_prompt)
@@ -299,7 +279,7 @@ def main() -> None:
     parser.add_argument("--output", "-o", help="指定輸出 Prompt 之檔案路徑")
     args = parser.parse_args()
 
-    run_interactive_grill_me()
+    run_interactive_grill_me(args.output or "OSCE_Authoring_Prompt.md")
 
 
 if __name__ == "__main__":

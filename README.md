@@ -12,7 +12,8 @@
 
 | 目錄 | 內容 |
 |------|------|
-| `skill/` | Context Repo 正式 skill 的發行快照；請在 Context Repo 修改後同步 |
+| `skill/` | **osce-item-development skill 的唯一正本**；Claude、Codex、Context Repo 的副本都由 `sync-skill.ps1` 部署 |
+| `rules.yaml` | **所有硬規格數字的唯一來源**；SKILL.md、SKILL_GPT.md、本 README 的規格區塊與 `grill_me.py` 都從它產生 |
 | `templates/` | 台灣醫學教育學會官方試題參考格式（四種 SP 站型＋操作技能站） |
 | `teaching/` | 出題教師講習簡報、可直接複製的出題 Prompt 講義 |
 | `stations/` | 已完成的教案範例（16 份，涵蓋五種站型） |
@@ -53,7 +54,7 @@
 ### 方式 C：免費版 ChatGPT / 網頁大模型用戶（無 Agent 環境專用）
 
 若您手邊沒有 coding agent 或進階終端工具，僅使用一般的**免費版 ChatGPT（3.5 / 4o-mini / 4o 均可）、Claude 或 Gemini 網頁介面**：
-1. 打開本 repo 根目錄的 [`SKILL_GPT.md`](SKILL_GPT.md)（或 [`teaching/SKILL_GPT.md`](teaching/SKILL_GPT.md)）。
+1. 打開本 repo 根目錄的 [`SKILL_GPT.md`](SKILL_GPT.md)。
 2. **複製全部內容**，貼入網頁版 ChatGPT 的第一條對話（或填入 Custom GPT 的 Instructions 欄位）。
 3. ChatGPT 會立即載入所有 TAME 規範、職類分流、敘事醫學向度規準與防呆紅線，並自動啟動 **Grill Me 訪談對話**，引導您完成背景設定並產出試題！
 
@@ -69,26 +70,61 @@
 | **非醫學職類**<br>（護理、藥學、物理治療、職能治療、呼吸治療、營養、社工、心理、醫技等） | **敘事醫學方式評分**<br>（推薦全人照護溝通/衛教） | 採用 Rita Charon 敘事醫學體系，**不產出破碎扣分式的 0/1/2 條列打勾**，改採四大核心向度質性評量規準（優異4分／熟練3分／發展中2分／未達標準1分）：<br>1. **全心傾聽與病患故事探索 (Attention)**<br>2. **同理共鳴與處境再現 (Representation)**<br>3. **關係締結與共同照護同盟 (Affiliation)**<br>4. **考官質性敘事觀察與反思回饋表 (Narrative Feedback)**<br>＋整體表現 5 等第。 |
 | **非醫學職類** | **專業條列式評分** | 若該職類技術操作站需要客觀步驟查核，亦可指定採用 0/1/2 條列式評分。 |
 
-### 字級（**TAME 官方硬規格，不可自行縮小**）
-| 元素 | 字級 |
-|------|------|
-| 告示牌 站次號 | 48pt |
-| 告示牌 病患資訊（≤30字） | 36pt |
-| 考生指引本體 | 26pt |
-| 五大部分標題 | 20pt |
-| 診間文件、評分表滿分／簽名 | 14pt |
-| 內文與表格 | 12pt |
+### 硬規格（由 rules.yaml 產生，改數字請改 rules.yaml 後執行 `python scripts/build_docs.py`）
 
-### SP 提問限制
-- 主動發問 **≤5 題**，其中觸及評分項目的 **≤2 題**
-- 提問須押在**考生完成主要說明之後**，SP 不得主導會談
-- **劇本對白例句表至多 2 列**可寫成提問，其餘列只寫「回應」
-- 若提問觸及評分項目，評分說明須註明「經 SP 提問後才說明者，最多部份做到（1 分）」
+<!-- BEGIN GENERATED: hard-spec (edit rules.yaml, then run scripts/build_docs.py) -->
+**頁面**：A4，四邊 2.0 cm，表格總寬 ≤17.0 cm。五大部分：告示牌／考生指引／評分表／考官指引／SP 指引。測驗時間 8 分鐘。
 
-### 站型專屬紅線
-- 病史站：LQQOPERA 群組 ≤30%（15 項時即 ≤4 項）
-- 身體檢查站：腹部須依 IAPP 順序（**聽診在叩、觸之前**）
-- 溝通衛教／病情解釋站：**Teach-back 不可省略**
+**字級（TAME 官方，不可自行縮小）**
+
+| 元素 | 字級 | 說明 |
+|---|---|---|
+| 告示牌 站次號「第　站」 | **48pt** | 粗體置中；考生在門口遠距閱讀 |
+| 告示牌 病患資訊（≤30 字） | **36pt** | 粗體置中 |
+| 考生指引本體（背景、測驗主題、時間、報告標題） | **26pt** | 進站前 1 分鐘要讀完 |
+| 五大部分標題 | **20pt** | 粗體 |
+| 診間文件／檢查報告內容 | **14pt** | 黏貼於診間桌面 |
+| 評分表 滿分／總得分／考官簽名 | **14pt** |  |
+| 其餘內文、表格、考官指引、SP 指引 | **12pt** | Normal 樣式 |
+
+**條列式評分（醫學系預設）**
+
+- 共 **N 項**，N 於階段一確認（國考型建議 15 項，其他 10–15 項）；每項 0 沒有做到／1 部分做到／2 完全做到，**滿分＝N×2 分**。
+- ★高鑑別力 **2–5 項**；共通／通用項目 **≤1 項**；主要評分範圍 **≥50%**（至少 ⌈N/2⌉ 項，N=15 時 ≥8）；子項目 **≤3**。
+- 病史站 LQQOPERA 群組 **≤30%**（N=15→≤4, N=12→≤3, N=10→≤3）。
+- 評分表欄位：`評分項目（共 N 項） | 0 沒有做到 | 1 部分做到 | 2 完全做到 | 註解`，欄寬 8.0 / 1.6 / 1.6 / 1.6 / 1.4 cm。官方範本預印「滿分：30分」只對應 15 項，N 不同時務必改寫。
+- 整體表現 5 等第：差1分／待加強2分／普通3分／良好4分／優秀5分。
+
+**敘事醫學評分（非醫學職類可選）**
+
+- 每個計分向度四級：優異（4分）／熟練（3分）／發展中（2分）／未達標準（1分）；**滿分 12 分**。
+- 向度1：全心傾聽與病患故事探索（Attention: Eliciting Illness Narrative）——能否辨識病人隱含的情緒暗號（Cues），探詢疾病對日常生活、家庭角色與心靈負擔的衝擊，營造安全包容的傾聽氛圍。
+- 向度2：同理共鳴與處境再現（Representation: Empathic Resonance & Reflection）——能否以反思性同理精準回饋病人的焦慮與脆弱，讓病人感受到自己的痛苦被看見與理解。
+- 向度3：關係締結與共同照護同盟（Affiliation: Relational Alliance & Shared Care）——能否平權互動、尊重病人價值觀，把專業建議融入病人真實生活，締結可行的照護同盟。
+- 向度4：考官質性敘事觀察與反思回饋（Narrative Observation & Qualitative Feedback）——考官記錄關鍵互動片段（Critical Incidents）與反思引導回饋（Reflective Feedback），作為測驗後 debriefing 教材。**不計分。**
+- 另附整體表現 5 等第。規準全文見 `references/narrative-rubric.md`。
+
+**SP 提問**
+
+- SP 主動提問 **≤5 題**，其中會觸及評分項目的 **≤2 題**。
+- 提問押在**考生完成主要說明之後**（或明顯停頓時），SP 不得主導會談。
+- 劇本對白例句表（三欄：`病歷架構 | 醫師對 SP 說的話 | SP 的回應或提問`，欄寬 3.5 / 6.5 / 5.5 cm）至多 **2 列**寫成提問，其餘列只寫「回應」。
+- 提問若觸及評分項目，評分說明須註明「經 SP 提問後才說明者，最多給 1 分（部份做到）」。
+
+**站型紅線**
+
+- **病史詢問站**：LQQOPERA 群組 ≤30%，把分數留給鑑別線索、危險因子、ICE。
+- **身體檢查站**：腹部依 視診→聽診→叩診→觸診（**聽診在叩、觸之前**）。
+- **醫病溝通與衛教站**、**病情解釋及臨床處置站**：**Teach-back 不可省略**。
+- 全部站型：8 分鐘可完成；鑑別診斷 ≥3 個；提示卡 ≤3 張；檢查報告 A4 ≤3 頁（純文字 ≤2 頁）；考生指引測驗主題 ≤3 個紅色 ●；背景資料與告示牌病患資訊各 ≤30 字；不放真實病人識別資料。
+
+**範本檔名**
+
+- 病史詢問：`1.試題參考格式-空白+例句(SP  病史詢問).docx`
+- 身體檢查：`2.試題參考格式-空白+例句(SP  身體檢查).docx`
+- 醫病溝通與衛教：`3.試題參考格式-空白+例句(SP  醫病溝通與衛教).docx`
+- 病情解釋及臨床處置：`4.試題參考格式-空白+例句(SP  病情解釋及臨床處置).docx`
+<!-- END GENERATED: hard-spec -->
 
 ---
 
@@ -104,39 +140,30 @@
 - 編輯 .docx 使用 Word COM 或 python-docx；python-pptx 用於 .pptx。修改後另做逐頁版面檢查。
 - COM 可用性需在當前機器檢查。只管理本次建立的文件，不強制結束其他 Word 工作階段。
 
-## 跨機部署
+## 改規則與部署
 
-唯一規則來源為私人 YiChan-Context-Repo 的
-`.agents/skills/osce-item-development/`；本 repo 管理部署程式。
-既有 templates/stations/teaching 檔案保留作相容與歷史用途，本次不遷移。
-新教案成果依 registry 保存到 cloud://OSCE/OSCE教案開發教學。
+先讀 [`AGENTS.md`](AGENTS.md)。簡單說：
 
-需要 Python 3.10+；YAML registry 另需 `pip install -r requirements.txt`。
-Context Repo 位置可使用 -ContextRoot 或 YICHAN_CONTEXT_ROOT；
-未指定時偵測使用者 Documents/ 或使用者根目錄下的 YiChan-Context-Repo。
-兩處皆存在時須明確指定。雲端與 runtime 根目錄取自該 repo 的
-SYSTEM_REGISTRY.yaml 與 SYSTEM_REGISTRY.local.yaml。
+1. 數字改 `rules.yaml`，流程與說明改 `skill/SKILL.md` 的手寫段落。
+2. `python scripts/build_docs.py` 重新產生 GENERATED 區塊；`python -B -m unittest discover -s tests` 跑測試。
+3. 開 PR，合併後部署：
 
 ```powershell
-# 預設唯讀，列出 Claude 與 Codex 各自的變更及衝突
+# 預設唯讀，列出每個目標會改什麼
 .\sync-skill.ps1 -ContextRoot '<本機 Context Repo>'
-# 實際部署
+# 實際部署到 ~/.claude/skills、~/.codex/skills 與 Context Repo
 .\sync-skill.ps1 -ContextRoot '<本機 Context Repo>' -Apply
-# 更新本 repo 的發行快照（明確指定目標）
-.\sync-skill.ps1 -ContextRoot '<本機 Context Repo>' -Target '.\skill' -Apply
+# 第一次接管從未被本工具部署過的副本（被取代的檔案先備份到 .sync-backups/）
+.\sync-skill.ps1 -ContextRoot '<本機 Context Repo>' -Apply -Adopt
 ```
 
-範本依序使用 -TemplateRoot、registry 解析的雲端範本、repo templates/。
-缺少四種站型範本時停止。部署會產生 deployment.local.json，讓已安裝的 skill
-找到實際 template_dir、output_dir、runtime_dir。
-本機指標、同步基準 .sync-state.json 與 .sync-backups/ 不進 Git。
+部署過的副本若被手改，工具整批拒絕、不寫入任何檔案——那代表有人繞過正本，先把改動併回 `skill/`。
+`-Adopt` 不會覆蓋這種情況。Context Repo 那一份部署後要在 Context Repo 另外 commit。
 
-任何目標有未管理差異或上次部署後的自行修改時，整批預檢失敗且不寫入。
-首次接管既有不同內容時，先將差異整合回 Context Repo，保存舊版本，
-再讓目標與 canonical 內容一致後建立基準。工具沒有強制覆蓋選項。
-正常來源更新會先備份被替換檔案、複製後驗證 SHA-256；多餘檔案保留並列出。
-若執行中失敗，已完成的個別檔案可能已更新；保留備份且錯誤退出，修正後重跑。
+範本依序使用 `-TemplateRoot`、registry 解析的雲端範本、repo `templates/`；缺少四種站型範本時停止。
+部署會產生 `deployment.local.json`，讓已安裝的 skill 找到實際的 template_dir、output_dir、runtime_dir。
+本機指標、`.sync-state.json` 與 `.sync-backups/` 不進 Git。
 
-驗證：`python -B -m unittest discover -s tests`。
-這些測試驗證部署行為，不代表既有教案通過臨床審題或逐頁視覺 QA。
+需要 Python 3.10+ 與 `pip install -r requirements.txt`（PyYAML）。
+
 - Windows PowerShell 5.1 **不支援 `` `u3000 `` 這類 Unicode 逸出**，特殊字元（□ ■ ℃ μ ’ …）須直接輸入真字元

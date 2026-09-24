@@ -1,4 +1,10 @@
-"""Deploy canonical Context Repo skill; dry-run by default. Python 3.10+."""
+"""Deploy the canonical skill (this repo's skill/) to every agent; dry-run by default.
+
+The canonical copy is skill/ in this repository. Claude Code, Codex and the
+YiChan-Context-Repo registry each receive a deployed copy and must not be edited in
+place: a later deployment refuses to overwrite a copy that changed since it was
+deployed. Python 3.10+.
+"""
 from __future__ import annotations
 import argparse
 import hashlib
@@ -38,15 +44,15 @@ def roots(context):
 def context_root(explicit=None):
     if explicit:
         path = Path(explicit).expanduser().resolve()
-        if not (path / SKILL / "SKILL.md").is_file():
-            raise ValueError(f"Canonical skill missing: {path}")
+        if not (path / "SYSTEM_REGISTRY.yaml").is_file():
+            raise ValueError(f"Not a Context Repo (no SYSTEM_REGISTRY.yaml): {path}")
         return path
     configured = os.environ.get("YICHAN_CONTEXT_ROOT")
     if configured:
         return context_root(configured)
     candidates = [Path.home() / "Documents/YiChan-Context-Repo",
                   Path.home() / "YiChan-Context-Repo"]
-    found = [p.resolve() for p in candidates if (p / SKILL / "SKILL.md").is_file()]
+    found = [p.resolve() for p in candidates if (p / "SYSTEM_REGISTRY.yaml").is_file()]
     if len(found) != 1:
         raise ValueError("Set -ContextRoot / --context-root or YICHAN_CONTEXT_ROOT explicitly.")
     return found[0]
@@ -68,7 +74,14 @@ def inventory(source):
         raise ValueError("Canonical source has no SKILL.md")
     return result
 
-def deploy(source, targets, metadata, apply=False):
+def deploy(source, targets, metadata, apply=False, adopt=False):
+    """Copy source to every target, or to none of them.
+
+    adopt=True lets a target that was never deployed by this tool (it has no
+    .sync-state.json) be taken over even though its files differ; every file it
+    replaces is backed up first. A target that *was* deployed and then edited by hand
+    is still refused - adoption is a one-time step, not a force option.
+    """
     source = checked_path(source)
     files = inventory(source)
     plans = []
@@ -95,7 +108,8 @@ def deploy(source, targets, metadata, apply=False):
                 continue
             # First adoption requires identical content or a missing target.
             if actual is not None and actual != previous_hashes.get(rel):
-                conflicts.append(str(dst))
+                if not (adopt and not state_path.exists()):
+                    conflicts.append(str(dst))
             changes.append((rel, src, dst, actual, wanted))
         extras = []
         if target.exists():
@@ -143,6 +157,8 @@ def main(argv=None):
     parser.add_argument("--target", action="append")
     parser.add_argument("--template-root")
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--adopt", action="store_true",
+                        help="take over copies never deployed by this tool; replaced files are backed up")
     args = parser.parse_args(argv)
     try:
         context = context_root(args.context_root)
@@ -161,11 +177,13 @@ def main(argv=None):
             raise ValueError(f"Four station templates required: {template_dir}")
         targets = args.target or [
             str(Path.home() / ".claude/skills/osce-item-development"),
-            str(Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "skills/osce-item-development")]
-        metadata = {"context_root": str(context), "template_dir": str(template_dir.resolve()),
+            str(Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "skills/osce-item-development"),
+            str(context / SKILL)]
+        metadata = {"canonical": str(repo / "skill"), "context_root": str(context),
+                    "template_dir": str(template_dir.resolve()),
                     "output_dir": str(Path(cloud) / "OSCE/OSCE教案開發教學"),
                     "runtime_dir": str(Path(runtime) / "osce")}
-        deploy(context / SKILL, targets, metadata, args.apply)
+        deploy(repo / "skill", targets, metadata, args.apply, args.adopt)
         return 0
     except (ValueError, OSError, json.JSONDecodeError) as exc:
         print(str(exc), file=sys.stderr)

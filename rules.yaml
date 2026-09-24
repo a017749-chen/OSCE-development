@@ -1,0 +1,112 @@
+# OSCE 出題硬規格：唯一來源。
+#
+# 改這個檔案，然後執行：
+#     python scripts/build_docs.py
+# skill/SKILL.md、SKILL_GPT.md、README.md 裡標記為 GENERATED 的區塊，
+# 以及 scripts/grill_me.py 產生的出題 Prompt，全部從這裡來。
+# CI 會用 `python scripts/build_docs.py --check` 擋下沒有重新產生的變更。
+#
+# 依據：台灣醫學教育學會（TAME）OSCE 試題參考格式四份範本（字級以 XML 實測）
+# 與 114 年度 OSCE 試題開發指引／檢核表。
+
+station:
+  minutes: 8
+  sections: [告示牌, 考生指引, 評分表, 考官指引, SP 指引]
+
+# 字級是 TAME 格式的一部分，不可自行縮小。
+fonts_pt:
+  sign_station_number: 48      # 告示牌「第　站」，粗體置中
+  sign_patient_info: 36        # 告示牌病患資訊，粗體置中
+  candidate_body: 26           # 考生指引本體（背景、測驗主題、時間、報告標題）
+  section_title: 20            # 五大部分標題，粗體
+  room_documents: 14           # 診間內提供考生的文件、檢查報告內容
+  score_header: 14             # 評分表滿分／總得分／考官簽名
+  body: 12                     # 其餘內文與表格
+
+limits:
+  sign_patient_info_chars: 30
+  candidate_background_chars: 30
+  candidate_tasks_max: 3       # 紅色 ●；官方範本「少於 3 項提示」，一般 2–3 項
+  cue_cards_max: 3
+  report_pages_max: 3          # A4
+  text_report_pages_max: 2
+  differentials_min: 3
+
+page:
+  paper: A4
+  margin_cm: 2.0
+  table_width_max_cm: 17.0
+
+checklist:
+  levels: ["0 沒有做到", "1 部分做到", "2 完全做到"]
+  items_default: 15            # 國考型
+  items_min: 10
+  items_max: 15
+  high_discrimination_min: 2   # ★
+  high_discrimination_max: 5
+  generic_items_max: 1
+  main_construct_min_fraction: 0.5
+  sub_items_max: 3
+  columns: ["評分項目（共 N 項）", "0 沒有做到", "1 部分做到", "2 完全做到", "註解"]
+  columns_cm: [8.0, 1.6, 1.6, 1.6, 1.4]
+
+global_rating: ["差", "待加強", "普通", "良好", "優秀"]   # 1–5 分
+
+sp:
+  questions_max: 5
+  scoring_questions_max: 2     # 會觸及評分項目的提問
+  dialogue_question_rows_max: 2
+  prompted_item_score_cap: 1   # 經 SP 提問後才說明者，最多部份做到
+  dialogue_columns: ["病歷架構", "醫師對 SP 說的話", "SP 的回應或提問"]
+  dialogue_columns_cm: [3.5, 6.5, 5.5]
+
+station_types:
+  history:
+    name: 病史詢問
+    template: "1.試題參考格式-空白+例句(SP  病史詢問).docx"
+    lqqopera_max_fraction: 0.3
+  physical:
+    name: 身體檢查
+    template: "2.試題參考格式-空白+例句(SP  身體檢查).docx"
+    abdomen_order: [視診, 聽診, 叩診, 觸診]   # 聽診在叩、觸之前
+  communication:
+    name: 醫病溝通與衛教
+    template: "3.試題參考格式-空白+例句(SP  醫病溝通與衛教).docx"
+    teach_back_required: true
+  explanation:
+    name: 病情解釋及臨床處置
+    template: "4.試題參考格式-空白+例句(SP  病情解釋及臨床處置).docx"
+    teach_back_required: true
+
+# 非醫學職類可選。第四向度是考官質性回饋，不計分。
+narrative:
+  levels: {4: 優異, 3: 熟練, 2: 發展中, 1: 未達標準}
+  scored_dimensions:
+    - name: 全心傾聽與病患故事探索
+      en: "Attention: Eliciting Illness Narrative"
+      focus: 能否辨識病人隱含的情緒暗號（Cues），探詢疾病對日常生活、家庭角色與心靈負擔的衝擊，營造安全包容的傾聽氛圍。
+    - name: 同理共鳴與處境再現
+      en: "Representation: Empathic Resonance & Reflection"
+      focus: 能否以反思性同理精準回饋病人的焦慮與脆弱，讓病人感受到自己的痛苦被看見與理解。
+    - name: 關係締結與共同照護同盟
+      en: "Affiliation: Relational Alliance & Shared Care"
+      focus: 能否平權互動、尊重病人價值觀，把專業建議融入病人真實生活，締結可行的照護同盟。
+  feedback_dimension:
+    name: 考官質性敘事觀察與反思回饋
+    en: "Narrative Observation & Qualitative Feedback"
+    focus: 考官記錄關鍵互動片段（Critical Incidents）與反思引導回饋（Reflective Feedback），作為測驗後 debriefing 教材。
+  columns_cm: [3.8, 3.3, 3.3, 3.3, 3.3]
+
+professions:
+  - 醫學系／醫師
+  - 護理學系／護理師
+  - 藥學系／藥師
+  - 物理治療學系／物理治療師
+  - 職能治療學系／職能治療師
+  - 呼吸治療學系／呼吸治療師
+  - 營養學系／營養師
+  - 醫事檢驗學系／醫檢師
+  - 醫事放射學系／放射師
+  - 臨床心理學系／心理師
+  - 醫務社會工作／社工師
+  - 其他醫事職類

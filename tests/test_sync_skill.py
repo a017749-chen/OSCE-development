@@ -20,9 +20,9 @@ class DeploymentTests(unittest.TestCase):
         (self.source / "SKILL.md").write_text("v1", encoding="utf-8")
         self.target = self.root / "target"
 
-    def deploy(self, apply=False, targets=None):
+    def deploy(self, apply=False, targets=None, adopt=False):
         with contextlib.redirect_stdout(io.StringIO()):
-            sync.deploy(self.source, targets or [self.target], {"template_dir": "test"}, apply)
+            sync.deploy(self.source, targets or [self.target], {"template_dir": "test"}, apply, adopt)
 
     def test_dry_run_does_not_create_target(self):
         self.deploy()
@@ -80,6 +80,7 @@ class DeploymentTests(unittest.TestCase):
         skill = context / sync.SKILL
         skill.mkdir(parents=True)
         (skill / "SKILL.md").write_text("test")
+        (context / "SYSTEM_REGISTRY.yaml").write_text("{}")
         (context / "SYSTEM_REGISTRY.local.yaml").write_text(json.dumps({
             "logical_roots": {"cloud": str(self.root), "runtime": str(self.root / "runtime")}}))
         with contextlib.redirect_stderr(io.StringIO()):
@@ -87,6 +88,27 @@ class DeploymentTests(unittest.TestCase):
                                 "--template-root", str(self.root / "missing"), "--apply"])
         self.assertEqual(result, 2)
         self.assertFalse(self.target.exists())
+
+    def test_adopt_takes_over_a_never_deployed_copy_and_backs_it_up(self):
+        self.target.mkdir()
+        (self.target / "SKILL.md").write_text("hand-made older version")
+        self.deploy(True, adopt=True)
+        self.assertEqual((self.target / "SKILL.md").read_text(), "v1")
+        backups = list((self.target / ".sync-backups").rglob("SKILL.md"))
+        self.assertEqual([b.read_text() for b in backups], ["hand-made older version"])
+
+    def test_adopt_does_not_override_a_deployed_copy_edited_by_hand(self):
+        self.deploy(True)
+        (self.target / "SKILL.md").write_text("edited after deployment")
+        with self.assertRaisesRegex(ValueError, "no files written"):
+            self.deploy(True, adopt=True)
+        self.assertEqual((self.target / "SKILL.md").read_text(), "edited after deployment")
+
+    def test_the_repository_skill_is_the_source_and_context_repo_is_a_target(self):
+        source = Path(sync.__file__).read_text(encoding="utf-8")
+        self.assertIn('deploy(repo / "skill"', source)
+        self.assertIn("str(context / SKILL)", source)
+
 
 if __name__ == "__main__":
     unittest.main()
