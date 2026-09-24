@@ -45,11 +45,12 @@ class TestGrillMePromptGenerator(unittest.TestCase):
         self.assertIn("考評職類：醫學系／醫師", prompt)
         self.assertIn("TAME 官方條列式評分", prompt)
         self.assertIn("15 項 × 0/1/2 分，滿分 30 分", prompt)
-        self.assertIn("高鑑別力項目（★）：2–5 項", prompt)
-        self.assertIn("主要評分範圍佔 ≥ 50%", prompt)
-        self.assertIn("SP 提問限制：主動發問 ≤ 5 題", prompt)
-        self.assertIn("告示牌：站次號（48pt粗體）＋病患資訊（36pt粗體，≤30字）", prompt)
-        self.assertIn("考生指引（本體26pt）", prompt)
+        self.assertIn("★高鑑別力 **2–5 項**", prompt)
+        self.assertIn("主要評分範圍 **≥50%**", prompt)
+        self.assertIn("SP 主動提問 **≤5 題**", prompt)
+        self.assertIn("告示牌站次號 48pt、病患資訊 36pt", prompt)
+        self.assertIn("考生指引本體 26pt", prompt)
+        self.assertIn("LQQOPERA 群組 **≤30%**", prompt)
         self.assertNotIn("全心傾聽與病患故事探索（Attention", prompt)
 
     def test_non_medical_profession_narrative_medicine_prompt(self):
@@ -74,17 +75,14 @@ class TestGrillMePromptGenerator(unittest.TestCase):
 
         self.assertIn("考評職類：護理學系／護理師", prompt)
         self.assertIn("敘事醫學方式評分", prompt)
-        self.assertIn("全人照護四大向度質性規準", prompt)
-        self.assertIn("向度一：全心傾聽與病患故事探索（Attention: Eliciting Illness Narrative）", prompt)
-        self.assertIn("向度二：同理共鳴與處境再現（Representation: Empathic Resonance & Reflection）", prompt)
-        self.assertIn("向度三：關係締結與共同照護同盟（Affiliation: Relational Alliance & Shared Care）", prompt)
-        self.assertIn("向度四：考官質性敘事觀察與反思回饋表（Narrative Observation & Qualitative Feedback）", prompt)
-        self.assertIn("優異 (4分)", prompt)
-        self.assertIn("熟練 (3分)", prompt)
-        self.assertIn("發展中 (2分)", prompt)
-        self.assertIn("未達標準 (1分)", prompt)
+        self.assertIn("向度1：全心傾聽與病患故事探索（Attention: Eliciting Illness Narrative）", prompt)
+        self.assertIn("向度2：同理共鳴與處境再現（Representation: Empathic Resonance & Reflection）", prompt)
+        self.assertIn("向度3：關係締結與共同照護同盟（Affiliation: Relational Alliance & Shared Care）", prompt)
+        self.assertIn("向度4：考官質性敘事觀察與反思回饋（Narrative Observation & Qualitative Feedback）", prompt)
+        self.assertIn("優異（4分）／熟練（3分）／發展中（2分）／未達標準（1分）", prompt)
+        self.assertIn("滿分 12 分", prompt)
         self.assertIn("關鍵互動片段（Critical Incidents）", prompt)
-        self.assertIn("SP 提問限制：主動發問 ≤ 5 題", prompt)
+        self.assertIn("SP 主動提問 **≤5 題**", prompt)
         self.assertNotIn("15 項 × 0/1/2 分", prompt)
 
     def test_non_medical_profession_checklist_prompt(self):
@@ -107,9 +105,25 @@ class TestGrillMePromptGenerator(unittest.TestCase):
 
         self.assertIn("考評職類：藥學系／藥師", prompt)
         self.assertIn("TAME 官方條列式評分（12 項 × 0/1/2 分，滿分 24 分）", prompt)
-        self.assertIn("評分項目數：共 12 項", prompt)
+        self.assertIn("本站評分項目數：共 12 項，滿分 24 分", prompt)
         self.assertNotIn("全心傾聽與病患故事探索（Attention", prompt)
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestPromptFollowsRules(unittest.TestCase):
+    """Change a number in rules.yaml and the generated prompt must follow."""
+
+    def test_every_rule_number_comes_from_rules_yaml(self):
+        rules = grill_me.RULES
+        prompt = grill_me.build_osce_prompt({"rubric_type": "checklist", "item_count": 12})
+        self.assertIn(f"SP 主動提問 **≤{rules['sp']['questions_max']} 題**", prompt)
+        self.assertIn(f"告示牌站次號 {rules['fonts_pt']['sign_station_number']}pt", prompt)
+        self.assertIn("N=12→≤3", prompt)
+
+    def test_rules_appear_once(self):
+        prompt = grill_me.build_osce_prompt({"rubric_type": "checklist", "item_count": 15})
+        self.assertEqual(prompt.count("SP 主動提問"), 1)
+        self.assertEqual(prompt.count("★高鑑別力"), 1)
