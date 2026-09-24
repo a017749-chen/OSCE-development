@@ -1,0 +1,88 @@
+# 範例教案（虛構病人，沒有任何真實個資）。建置：
+#   python scripts/build_station.py examples/example_station.yaml -o out/範例_膽囊炎_病情解釋.docx
+# 格式數字一律來自 rules.yaml；這裡只放內容。
+
+station_type: explanation        # history / physical / communication / explanation
+number: ""                       # 站次號；空白＝考試當天再填
+rubric: checklist                # checklist 或 narrative
+sign: 45歲女性，右上腹痛兩天，超音波已完成
+
+candidate:
+  background: 你是病房值班醫師，檢查已完成，準備向病人說明
+  tasks:
+    - 向病人說明目前的診斷
+    - 說明建議的治療方式與風險
+    - 確認病人理解並共同決定後續處置
+  notes:
+    - 請避免艱澀醫學術語
+  report:
+    vitals: BP 128/76、HR 92、BT 37.9℃、RR 18、SpO2 98%
+    symptoms: 右上腹悶痛合併脹氣，進食油膩後加劇
+    other: 腹部超音波：膽囊壁增厚 5 mm、膽結石多顆、Murphy's sign 陽性
+    other_2: WBC 12,800/μL、Bilirubin 正常
+
+checklist:
+  - text: 自我介紹並確認病人身分
+    anchors: {"2": 說出姓名職稱並核對病人姓名, "1": 只做其中一項, "0": 皆未做}
+  - text: 先詢問病人目前的理解與擔憂
+    anchors: {"2": 開放式詢問並回應擔憂, "1": 有詢問但未回應, "0": 未詢問}
+  - text: 以病人能懂的話說明診斷為結石性膽囊炎
+    star: true
+    anchors: {"2": 說明結石與發炎兩者, "1": 只說其一, "0": 未說明或僅用術語}
+  - text: 說明診斷依據（超音波與檢驗）
+    anchors: {"2": 提到超音波發現與發炎指數, "1": 只提其一, "0": 未提}
+  - text: 說明不處理的風險
+    star: true
+    anchors: {"2": 說出反覆發作與穿孔或感染擴散, "1": 只說一項, "0": 未說明}
+  - text: 建議腹腔鏡膽囊切除術並說明理由
+    anchors: {"2": 說明術式與為何建議, "1": 只提術式, "0": 未建議}
+  - text: 說明手術主要風險
+    star: true
+    sp_prompted: true
+    anchors: {"2": 主動說明出血、感染、膽管損傷, "1": 只說一項或經 SP 提問後才說, "0": 未說明}
+  - text: 說明其他選項與限制（藥物只能暫時緩解）
+    anchors: {"2": 說明替代方案及其限制, "1": 只提替代方案, "0": 未提}
+  - text: 回應病人情緒
+    anchors: {"2": 命名情緒並表達支持, "1": 有回應但流於形式, "0": 忽略}
+  - text: 邀請病人參與決定
+    anchors: {"2": 詢問偏好並共同決定, "1": 有詢問但未納入, "0": 單方決定}
+  - text: Teach-back 請病人用自己的話說一次
+    star: true
+    anchors: {"2": 請病人回述並補正誤解, "1": 只問「清楚嗎」, "0": 未確認}
+  - text: 說明下一步安排與聯絡方式
+    anchors: {"2": 說明時程與誰會來說明, "1": 只說其一, "0": 未說明}
+
+examiner:
+  setting: 病房
+  sp_profile: 45 歲女性，家庭主婦，第一次住院，對開刀很害怕
+  start_position: 半坐臥於病床，手按右上腹
+  summary: 右上腹痛兩天，進食油膩後加劇，低燒。超音波顯示膽結石與膽囊壁增厚，Murphy's sign 陽性，白血球上升。
+  differentials: [急性結石性膽囊炎, 膽道結石併膽管炎, 消化性潰瘍, 急性胰臟炎]
+  props: 病床、床單
+
+sp:
+  setting: 病房
+  start_position: 半坐臥於病床
+  emotion: 焦慮 6/10
+  manner: 眉頭微皺，一手按右上腹
+  voice: 語速偏快，擔心時會重複問
+  principles: 以回應為主，不主動引導。考生說明告一段落後才可提出擔憂；不替考生補上沒說的內容。
+  summary: 家裡有兩個孩子要照顧，最擔心開刀後多久能回家。
+  dialogue:
+    - frame: 開場
+      candidate: 王女士您好，我是值班醫師，來跟您說明檢查結果
+      sp: 好，謝謝醫師。
+    - frame: 病情告知
+      candidate: 超音波顯示膽囊裡有結石，而且膽囊在發炎
+      sp: （點頭，神情緊張）
+    - frame: 治療建議
+      candidate: 我們建議用腹腔鏡把發炎的膽囊拿掉
+      sp: 要開刀喔……
+    - frame: 擔憂（考生說明告一段落後）
+      candidate: 您聽起來很擔心，最擔心的是什麼？
+      sp: 我家裡有兩個小孩，開刀要住多久？
+      question: true
+    - frame: Teach-back
+      candidate: 可以請您用自己的話說一次接下來會怎麼處理嗎？
+      sp: 膽囊發炎又有結石，要用腹腔鏡拿掉。
+  room_diagram: "【病房】病床靠牆，SP 半坐臥；考生站床邊；考官坐於床尾右後方；拉簾在病床左側。"

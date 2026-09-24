@@ -68,7 +68,7 @@ Word 產檔 `references/docx-word-com.md`；手冊版在地規格 `references/ha
 
 - SP 主動提問 **≤5 題**，其中會觸及評分項目的 **≤2 題**。
 - 提問押在**考生完成主要說明之後**（或明顯停頓時），SP 不得主導會談。
-- 劇本對白例句表（三欄：`病歷架構 | 醫師對 SP 說的話 | SP 的回應或提問`，欄寬 3.5 / 6.5 / 5.5 cm）至多 **2 列**寫成提問，其餘列只寫「回應」。
+- 劇本對白例句表（三欄：`病歷架構 | 醫師對 SP 說的話 | 第三欄`，第三欄依官方範本：病史詢問「SP 的回應」；身體檢查「SP 的回應」；醫病溝通與衛教「SP 的回應或提問」；病情解釋及臨床處置「SP 的回應或提問」，欄寬 3.5 / 6.5 / 5.5 cm）至多 **2 列**寫成提問，其餘列只寫「回應」。
 - 提問若觸及評分項目，評分說明須註明「經 SP 提問後才說明者，最多給 1 分（部份做到）」。
 
 **站型紅線**
@@ -213,10 +213,18 @@ Word 產檔 `references/docx-word-com.md`；手冊版在地規格 `references/ha
 
 ## 階段三：產出 Word 並檢核
 
-- 輸出位置：使用者指定優先；否則用 `deployment.local.json` 的 `output_dir`。先在 `runtime_dir` 產出驗證，再存到輸出位置。
-- **同名檔存在就用新的修訂檔名，絕不覆蓋**；使用者手改過的檔案不重新產生。
-- 產檔細節讀 `references/docx-word-com.md`。只操作本次建立的 Word 物件，**不強制結束其他 Word 工作階段**。
-- 產出後逐頁渲染檢查版面；結構正確不代表版面正確。
+工具在 OSCE-development repo 的 `scripts/`；repo 位置是 `deployment.local.json` 裡 `canonical` 的上一層。
+
+1. **把教案內容寫成 YAML**，格式照 repo 的 `examples/example_station.yaml`（只放內容；字級、欄寬、固定文字都由 `rules.yaml` 決定）。
+2. **產檔**：`python scripts/build_station.py <教案.yaml> -o <runtime_dir>/<檔名>.docx`
+   —— 依站型取官方範本的版面與樣式，任何電腦都能跑，不需要 Word。違反硬規格（字數、● 數、★ 數、SP 提問列、Teach-back、鑑別數）會直接拒絕並列出原因。
+3. **檢核**：`python scripts/validate_station.py <檔案>.docx` —— 必須零 FAIL；WARN 要逐一說明理由。
+4. **逐頁看**：有 Word 就轉 PDF 看每一頁（表格框線、跨頁、切邊只有看得出來）；沒有 Word 就明說版面尚未目視確認。
+5. 存到輸出位置：使用者指定優先，否則 `deployment.local.json` 的 `output_dir`。
+
+- 檔名：`科別_主題_站型_OSCE試題_vN.docx`，正體字。**同名檔存在就用新版號，工具本身也拒絕覆蓋**；使用者手改過的檔案不重新產生。
+- 審閱既有教案：直接跑第 3 步。`stations/STATUS.md` 是既有 16 份的檢核結果。
+- 只有要**就地修改**既有 .docx 且必須保留手工版面時，才讀 `references/docx-word-com.md` 用 Word COM；只操作本次建立的 Word 物件，**不強制結束其他 Word 工作階段**。
 
 ## 品質檢核閘（產出前逐項確認）
 

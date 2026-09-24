@@ -27,6 +27,9 @@ agent 不行。有衝突時先停下來問。
 ## 出題時
 
 - 依 `skill/SKILL.md` 的三階段走：先藍圖確認卡，再草擬，最後產檔與檢核。
+- 產檔：內容寫成 YAML（照 `examples/example_station.yaml`）→ `scripts/build_station.py` → `scripts/validate_station.py` 必須零 FAIL → 轉 PDF 逐頁看。
+  驗證器抓不到版面問題（跨頁、切邊）；2026-09-24 就是靠逐頁看才發現表格沒有框線。
+- 改了 `validate_station.py` 或 `rules.yaml` 就重新產生 `stations/STATUS.md`。
 - 範本在 `templates/`（TAME 官方格式，著作權屬該學會，**repo 保持 private，不對外散布**）。
 - **不覆蓋既有教案**：`stations/` 裡的檔案是擁有者手改過的成品。修訂一律存成新檔名。
 - 新教案檔名：`科別_主題_站型_OSCE試題_vN.docx`，一律正體字（「內科」不是「内科」）。
@@ -39,7 +42,8 @@ agent 不行。有衝突時先停下來問。
 
 ## 已知待辦
 
-- `stations/` 中 2026-07 之前的教案採舊字級（全文 12pt、告示牌 36／24pt），不符官方規格。
+- `stations/STATUS.md`：16 份中 15 份仍是舊字級；另有 4 份溝通／病情解釋站的 SP 對白表有 3–7 列提問
+  （上限 2），1 份沒有表格框線，4 份背景資料超過 30 字，1 份沒有三欄對白表。擁有者決定要修哪幾份。
 - 敘事醫學評分：舊文件寫「滿分 16 分」，但只有三個計分向度（第四向度是質性回饋不計分），
   依 `rules.yaml` 為 12 分。若擁有者本意是四向度都計分，改 `rules.yaml` 即可。
 - `D:\osce-item-development` 是本 repo 的舊 clone（落後），擁有者決定是否移除；不要在那裡工作。
