@@ -128,6 +128,48 @@ class StationToolTests(unittest.TestCase):
             with self.subTest(name), self.assertRaises(build_station.StationError):
                 build_station.build(station, RULES, REPO / "templates")
 
+    def test_the_builder_refuses_malformed_narrative_anchors(self):
+        dim = "同理共鳴與處境再現"
+
+        def set_anchor(level, value):
+            def spoil(s):
+                anchors = s["narrative"][dim]
+                key = level if level in anchors else int(level)
+                anchors[key] = value
+            return spoil
+
+        def duplicate(s):
+            anchors = s["narrative"][dim]
+            first = next(iter(anchors.values()))
+            for key in list(anchors):
+                anchors[key] = first
+
+        cases = {
+            "empty_anchor": set_anchor("3", ""),
+            "whitespace_only_anchor": set_anchor("2", "　 \n\t "),
+            "too_short_anchor": set_anchor("1", "未達"),
+            "none_anchor": set_anchor("4", None),
+            "number_anchor": set_anchor("4", 12345678901),
+            "list_anchor": set_anchor("4", ["能辨識病人的情緒暗號並回應"]),
+            "same_text_at_every_level": duplicate,
+            "extra_level": lambda s: s["narrative"][dim].update({"5": "超出四級評分的額外錨點文字內容"}),
+            "anchors_not_a_mapping": lambda s: s["narrative"].update({dim: "4 3 2 1 都寫在同一行的錨點"}),
+        }
+        for name, spoil in cases.items():
+            station = copy.deepcopy(EXAMPLE_NARRATIVE)
+            spoil(station)
+            with self.subTest(name), self.assertRaises(build_station.StationError):
+                build_station.build(station, RULES, REPO / "templates")
+
+    def test_anchor_minimum_comes_from_rules(self):
+        self.assertIsInstance(RULES["narrative"]["anchor_min_chars"], int)
+        station = copy.deepcopy(EXAMPLE_NARRATIVE)
+        shortest = min(len("".join(str(v).split()))
+                       for dim in RULES["narrative"]["scored_dimensions"]
+                       for v in station["narrative"][dim["name"]].values())
+        self.assertGreaterEqual(shortest, RULES["narrative"]["anchor_min_chars"],
+                                "the shipped example must pass its own rule")
+
     def test_narrative_builder_accepts_integer_and_string_keys(self):
         station = copy.deepcopy(EXAMPLE_NARRATIVE)
         for dim in RULES["narrative"]["scored_dimensions"]:
