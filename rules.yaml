@@ -94,6 +94,9 @@ station_types:
 # 非醫學職類可選。第四向度是考官質性回饋，不計分。
 narrative:
   levels: {4: 優異, 3: 熟練, 2: 發展中, 1: 未達標準}
+  # Each level's anchor text, not counting whitespace. Rejects empty or placeholder
+  # anchors only; whether an anchor is educationally good is a reviewer's call.
+  anchor_min_chars: 8
   scored_dimensions:
     - name: 全心傾聽與病患故事探索
       en: "Attention: Eliciting Illness Narrative"

@@ -155,6 +155,49 @@ def checkboxes(rules, chosen):
     return "　".join(("■ " if key == chosen else "□ ") + v["name"] for key, v in rules["station_types"].items())
 
 
+LEVELS = ("4", "3", "2", "1")
+
+
+def anchor_problems(dname: str, anchors, nar_conf: dict) -> list[str]:
+    """Structural checks on one dimension's anchors: present, text, long enough, distinct.
+
+    Only obviously malformed content is refused; no judgement of educational quality.
+    """
+    if not isinstance(anchors, dict):
+        return [f"向度「{dname}」的錨點必須是 4／3／2／1 各一段文字"]
+    by_level = {str(k).strip(): v for k, v in anchors.items()}
+    problems = []
+    missing = [lvl for lvl in LEVELS if lvl not in by_level]
+    if missing:
+        problems.append(f"向度「{dname}」缺少等級錨點：{missing}")
+    extra = sorted(k for k in by_level if k not in LEVELS)
+    if extra:
+        problems.append(f"向度「{dname}」有不存在的等級：{extra}（只有 4、3、2、1）")
+    minimum = nar_conf["anchor_min_chars"]
+    texts = {}
+    for lvl in LEVELS:
+        if lvl not in by_level:
+            continue
+        value = by_level[lvl]
+        if not isinstance(value, str):
+            problems.append(f"向度「{dname}」等級 {lvl} 的錨點不是文字")
+            continue
+        compact = "".join(value.split())
+        if not compact:
+            problems.append(f"向度「{dname}」等級 {lvl} 的錨點是空的")
+        elif len(compact) < minimum:
+            problems.append(f"向度「{dname}」等級 {lvl} 的錨點只有 {len(compact)} 字，至少 {minimum} 字")
+        else:
+            texts[lvl] = compact
+    seen = {}
+    for lvl, text in texts.items():
+        if text in seen:
+            problems.append(f"向度「{dname}」等級 {seen[text]} 與 {lvl} 的錨點文字相同")
+        else:
+            seen[text] = lvl
+    return problems
+
+
 def check_station(s: dict, rules: dict):
     """Refuse content that breaks a hard rule before anything is written."""
     lim = rules["limits"]
@@ -188,11 +231,7 @@ def check_station(s: dict, rules: dict):
                 if dname not in s["narrative"]:
                     problems.append(f"敘事評量缺少向度：{dname}")
                 else:
-                    anchors = s["narrative"][dname]
-                    missing_levels = [lvl for lvl in ("4", "3", "2", "1")
-                                      if lvl not in anchors and int(lvl) not in anchors]
-                    if missing_levels:
-                        problems.append(f"向度「{dname}」缺少等級錨點：{missing_levels}")
+                    problems.extend(anchor_problems(dname, s["narrative"][dname], nar_conf))
     else:
         problems.append(f"未知的評量模式：{mode}，必須為 checklist 或 narrative")
     questions = sum(1 for row in s["sp"]["dialogue"] if row.get("question"))
