@@ -18,7 +18,7 @@ OSCE 是表現本位評量：對齊 `能力 → 任務 → 可觀察行為 → �
 
 三階段：**階段一** 出題前確認（藍圖確認卡）→ **階段二** 草擬五大部分 → **階段三** 產出 Word 並檢核。
 需要細節時才讀：敘事醫學規準全文 `references/narrative-rubric.md`；
-Word 產檔 `references/docx-word-com.md`；手冊版在地規格 `references/handbook-integration.md`。
+Word 產檔 [references/docx-word-com.md](references/docx-word-com.md)；手冊版在地規格 [references/handbook-integration.md](references/handbook-integration.md)。
 
 ## 第一原則
 
