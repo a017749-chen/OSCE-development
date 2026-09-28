@@ -30,7 +30,7 @@ agent 不行。有衝突時先停下來問。
 - 產檔：內容寫成 YAML（照 `examples/example_station.yaml`）→ `scripts/build_station.py` → `scripts/validate_station.py` 必須零 FAIL → 轉 PDF 逐頁看。
   驗證器抓不到版面問題（跨頁、切邊）；2026-09-24 就是靠逐頁看才發現表格沒有框線。
 - 改了 `validate_station.py` 或 `rules.yaml` 就重新產生 `stations/STATUS.md`。
-- 範本在 `templates/`（TAME 官方格式，著作權屬該學會，**repo 保持 private，不對外散布**）。
+- 範本在 `templates/`（TAME 官方格式，著作權屬該學會）。repo 保持 private；擁有者 2026-09-28 決定可以分享給院內外的出題者（加 GitHub 協作者或給 `SKILL_GPT.md`／`teaching/`），但不公開張貼。
 - **不覆蓋既有教案**：`stations/` 裡的檔案是擁有者手改過的成品。修訂一律存成新檔名。
 - 新教案檔名：`科別_主題_站型_OSCE試題_vN.docx`，一律正體字（「內科」不是「内科」）。
 
