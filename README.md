@@ -4,7 +4,7 @@
 
 維護者：陳義展 醫師（長庚醫院 一般外科／臨床技能中心主任）
 
-> ⚠️ **本 repo 維持 private，但可以分享給院內外的出題者**（見「分享給別人時的界線」）。`templates/` 收錄的是台灣醫學教育學會的官方試題參考格式，著作權屬該學會，轉給別人時註明出處，不公開張貼。
+> ⚠️ **GitHub 目前顯示本 repo 為 Public**，任何人都能讀取；README 舊版「維持 private」的說明已不符現況，請以 GitHub Settings 實際可見度為準。若只想分享給指定協作者，須由擁有者自行將 repo 設為 Private。`templates/` 收錄台灣醫學教育學會官方試題參考格式；repo 可讀取不代表取得公開散布權，請遵守學會著作權與授權要求。不得放入真實病人資料或機構敏感資訊。
 
 ---
 
@@ -22,13 +22,14 @@
 
 ## 如何教別人使用（帶教指南）
 
-先分清楚對方是哪一種人，只教他需要的那一層。大多數出題教師只需要第一層。
+先分清楚對方是哪一種人，只教他需要的那一層。只用網頁 AI 的教師看 ①；能使用 Coding Agent 的教師看 ②；需要產檔或維護的人再看 ③、④。
 
 | 對象 | 要會的事 | 需要的東西 | 帶教時間 |
 |------|----------|------------|----------|
 | **① 出題教師**（臨床老師，只用網頁 AI） | 用 AI 訪談出一份教案草稿，自己審臨床內容 | 瀏覽器＋ `SKILL_GPT.md`（或 `teaching/` 的 Prompt 範本） | 約 30 分鐘 |
-| **② 命題秘書／技能中心助理**（會開終端機） | 把定稿寫成 YAML，產出 TAME 格式 .docx 並通過檢核 | Python 3.10+、本 repo 存取權 | 約 1 小時 |
-| **③ 維護者**（改規格、部署 skill） | 改 `rules.yaml`／`skill/SKILL.md`，跑測試、開 PR、部署 | Git、GitHub 權限 | 讀 [`AGENTS.md`](AGENTS.md) |
+| **② 使用 Coding Agent 的出題教師** | 讓 Agent 讀取 repo 正本 Skill、能力來源與規範，先對齊藍圖再產草稿／專屬 Prompt | Agent 能讀取 repo（GitHub 授權或本機 clone）；出題能力／課程目標來源 | 約 20 分鐘 |
+| **③ 命題秘書／技能中心助理**（會開終端機） | 把定稿寫成 YAML，產出 TAME 格式 .docx 並通過檢核 | Python 3.10+、本 repo 存取權 | 約 1 小時 |
+| **④ 維護者**（改規格、部署 skill） | 改 `rules.yaml`／`skill/SKILL.md`，跑測試、開 PR、部署 | Git、GitHub 權限 | 讀 [`AGENTS.md`](AGENTS.md) |
 
 ### ① 教出題教師（網頁 AI，不用安裝）
 
@@ -41,7 +42,35 @@
 不想對話的老師，改給 `teaching/OSCE出題Prompt_出題教師專用.docx`（醫學系）或
 `teaching/OSCE出題Prompt_跨職類與敘事醫學版.md`（非醫學職類），把 `--` 換成自己的情境貼上即可。
 
-### ② 教命題秘書（產檔與檢核）
+### ② 讓 Coding Agent 使用本 repo（Codex、Claude Code 等）
+
+這不是把整個 repo 貼進一次性 Prompt，而是讓 Agent 在有授權的工作區讀取**專案規則、正本 Skill 與出題能力來源**，再按 Skill 的流程提出問題、整理藍圖、產生草稿。請先分清三件事：
+
+| 需要什麼 | 怎麼做 |
+|----------|--------|
+| **讓 Agent 讀到 repo** | 若 repo 是 Public，提供 repo 連結即可，但前提是 Agent 所在環境支援 GitHub 存取；若是 Private，須授權該 Agent／GitHub App 讀取此 repo。授權時只選需要的 repo 與最低必要權限，組織 repo 可能需要管理者核准。也可先 clone 到可信任的本機工作區，再讓 Coding Agent 開啟該資料夾。**不要把 Personal Access Token 或密碼貼進 Prompt。** |
+| **讓 Agent 遵循出題流程** | 請它先讀 [`AGENTS.md`](AGENTS.md)、本 README、[`skill/SKILL.md`](skill/SKILL.md)，再依 Skill 指示讀取所需的 `references/`、`rules.yaml` 與對應範本。只有 repo URL 不代表 Skill 已安裝或會自動載入；若要跨任務重複使用，依本頁「改規則與部署」的流程部署正本 Skill。 |
+| **允許 Agent 修改檔案** | 讀取權與寫入權分開管理。出題初稿先要求 Agent 只讀 repo；只有需要改 repo 原始檔時，才另行授予寫入權，並依 [`AGENTS.md`](AGENTS.md) 走分支與 PR，不要直接改 `main`。 |
+
+**建議的 Agent 出題順序**
+
+1. 先從教師提供的課程目標、考生能力框架或院內核定資料，找出本題對應的**考生能力標的**，記錄來源檔名／章節與能力描述，再確認是否符合學員程度。repo 的 Skill 規定能力、任務、可觀察行為與評分要對齊；若找不到能力來源或層級不明，先請教師補資料，不自行杜撰。
+2. 依 Skill 先確認三個核心問題：**職類、評分模式、產出目標**（直接產出教案，或訪談後產出專屬 Prompt）；再分輪補齊站型、學員程度、情境、核心任務與其他缺漏。
+3. 將已確認的資訊整理成**藍圖確認卡**。如果教師選擇「產出專屬 Prompt」，再把設定編譯成可帶到其他 AI 平台使用的 Prompt；如果要直接產題，也要先等教師確認藍圖。
+4. Agent 產出的教案／Prompt 都是待審稿。教師須最後審閱能力對齊、臨床正確性、評分公平性與 TAME 格式，再定稿；格式驗證 PASS 不等於臨床內容已核准。
+
+可直接貼給 Agent 的起始訊息：
+
+```text
+請使用 a017749-chen/OSCE-development。先讀 AGENTS.md、README.md、skill/SKILL.md。
+先從我提供的課程目標／能力框架中，找出本題對應的考生能力標的，列出來源檔名、章節與原文，並確認符合學員程度；若找不到來源，先問我，不要自行推定。
+接著先確認三個核心問題：職類、評分模式、產出目標；再按 Skill 完成必要訪談並產生藍圖確認卡。等我核准藍圖後再起草或輸出專屬 Prompt。
+本次先只讀取 repo，不要修改原始檔；草稿須標示待人工審閱處，不可當作定稿。不要使用真實病人識別資料。
+```
+
+Skill 是可重複使用的工作流程指引，repo 則提供其規範與來源；兩者都不會自行授予 Agent 存取權。可把流程理解成：**repo 提供 Context、Skill 固定工作步驟、Agent 執行讀取／草擬／檢核迴圈、教師負責最後核准**。更多背景請見 [GitHub repo 可見度](https://docs.github.com/en/repositories/creating-and-managing-repositories/about-repositories)、[安裝 GitHub App 與選擇 repo 權限](https://docs.github.com/en/apps/using-github-apps/installing-a-github-app-from-a-third-party)、[OpenAI Agent Skills 說明](https://developers.openai.com/api/docs/guides/tools-skills)。
+
+### ③ 教命題秘書（產檔與檢核）
 
 第一次安裝（Windows PowerShell）：
 
@@ -72,7 +101,7 @@ pip install -r requirements.txt
 | 20 分 | 學員各自用手機或筆電做到藍圖確認卡 | 事先傳 `SKILL_GPT.md` |
 | 10 分 | 兩兩互看確認卡，對照紅線找問題 | 本 README「站型紅線」 |
 
-課後把確認卡或草稿收給命題秘書，走 ② 的流程產檔。
+課後把確認卡或草稿收給命題秘書，走 ③ 的流程產檔。
 
 ### 帶教時常被問的事
 
@@ -84,7 +113,7 @@ pip install -r requirements.txt
 
 ### 分享給別人時的界線
 
-- **院內、院外都可以分享**（擁有者 2026-09-28 決定）。要用 ② 的流程的人，請擁有者在 GitHub 加為協作者，這樣他拿到的永遠是最新版；只做 ① 的老師給 `SKILL_GPT.md` 與 `teaching/` 講義即可。
+- **院內、院外都可以分享**（擁有者 2026-09-28 決定），但依 repo 可見度採不同方式：Public repo 任何人都能讀取；Private repo 要由擁有者邀請協作者，或授權 Agent／GitHub App 存取。Coding Agent 使用者依 ② 操作；需要產檔的人依 ③ 操作；只做 ① 的老師給 `SKILL_GPT.md` 與 `teaching/` 講義即可。repo 可讀取不等於取得 `templates/` 官方格式的再散布權。
 - `templates/` 的官方試題參考格式著作權屬台灣醫學教育學會，轉給別人時註明出處。
 - 任何人都不把真實病人資料、審題委員意見放進 repo 或貼進網頁 AI。
 
